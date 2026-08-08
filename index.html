@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Momentum</title>
+<meta name="description" content="Momentum – din personlige treningslogg">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0e0f12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Momentum">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Bebas+Neue&family=Space+Grotesk:wght@600;700&family=Unbounded:wght@700;800&family=Archivo+Black&family=Sora:wght@700;800&family=Cabinet+Grotesk:wght@700&family=Monument+Extended:wght@700&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=clash-display@700&f[]=general-sans@700&f[]=satoshi@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f12;
+    --bg-elevated: #16181d;
+    --bg-card: #1b1e24;
+    --border: #2a2d34;
+    --text: #f1f2f4;
+    --text-dim: #8b8f98;
+    --accent: #7c9eff;
+    --accent-dim: #3a4b7a;
+    --danger: #ff6b6b;
+    --radius: 16px;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow-x: hidden;
+  }
+
+  #app {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    position: relative;
+    padding-bottom: 100px;
+  }
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: linear-gradient(180deg, var(--bg) 80%, transparent);
+    padding: 28px 20px 16px;
+  }
+
+  header h1 {
+    font-family: 'Monument Extended', 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    color: var(--text);
+  }
+
+  header p {
+    margin: 18px 0 0;
+    color: var(--text-dim);
+    font-size: 13px;
+    letter-spacing: 0.01em;
+  }
+
+  .hero {
+    position: relative;
+  }
+
+  .momentum-wrap {
+    position: relative;
+    display: inline-block;
+  }
+
+  .hero-line {
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 22px;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 2px;
+    animation: lineBounce 3.4s ease-in-out infinite;
+  }
+
+  @keyframes lineBounce {
+    0%   { left: 0; transform: scaleX(1); }
+    4%   { left: 0; transform: scaleX(0.55); }
+    9%   { left: 0; transform: scaleX(1); }
+    46%  { left: calc(100% - 22px); transform: scaleX(1); }
+    50%  { left: calc(100% - 22px); transform: scaleX(0.55); }
+    55%  { left: calc(100% - 22px); transform: scaleX(1); }
+    91%  { left: 0; transform: scaleX(1); }
+    96%  { left: 0; transform: scaleX(0.55); }
+    100% { left: 0; transform: scaleX(1); }
+  }
+
+  .letter-n {
+    display: inline-block;
+    transform: scaleX(-1);
+  }
+
+  #exercise-list {
+    padding: 8px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .empty-state {
+    text-align: center;
+    color: var(--text-dim);
+    padding: 60px 20px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.1s ease;
+    user-select: none;
+  }
+
+  .card:active {
+    transform: scale(0.985);
+    border-color: #3a3e47;
+  }
+
+  .card-thumb {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: var(--bg-elevated);
+    flex-shrink: 0;
+    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    font-size: 18px;
+    overflow: hidden;
+  }
+
+  .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+  .card-body { flex: 1; min-width: 0; }
+
+  .card-title {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-meta {
+    display: flex;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  .card-meta span b { color: var(--accent); font-weight: 600; }
+
+  .card-comment {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-date {
+    font-size: 11px;
+    color: #565a63;
+    margin-top: 6px;
+  }
+
+  #installBanner {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    max-width: 448px;
+    margin: 0 auto;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px 14px 14px 16px;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    z-index: 40;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+  }
+  #installBanner.show { display: flex; }
+  #installText {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  #installText strong {
+    font-size: 14px;
+    font-weight: 700;
+  }
+  #installText span {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  #installBtn {
+    background: var(--accent);
+    color: #0e0f12;
+    border: none;
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  #installDismiss {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-size: 14px;
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  #fab {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(calc(-50% + 0px));
+    margin-left: 0;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #0e0f12;
+    border: none;
+    font-size: 28px;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(124, 158, 255, 0.35);
+    cursor: pointer;
+    z-index: 20;
+    transition: transform 0.15s ease;
+  }
+  #fab:active { transform: translateX(0) scale(0.92); }
+
+  /* Overlay + sheet */
+  #overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 30;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  #overlay.show { opacity: 1; pointer-events: auto; }
+
+  #sheet {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 64px; /* leaves top visible */
+    max-width: 480px;
+    margin: 0 auto;
+    background: var(--bg-elevated);
+    border-radius: 24px 24px 0 0;
+    z-index: 31;
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(.32,.72,0,1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-bottom: none;
+  }
+  #sheet.show { transform: translateY(0); }
+  #sheet.dragging { transition: none; }
+
+  .sheet-handle-wrap {
+    padding: 10px 0 6px;
+    display: flex;
+    justify-content: center;
+    cursor: grab;
+    flex-shrink: 0;
+    touch-action: none;
+  }
+  .sheet-handle {
+    width: 40px;
+    height: 5px;
+    border-radius: 3px;
+    background: #3c4048;
+  }
+
+  .sheet-header {
+    padding: 4px 22px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .sheet-header h2 {
+    font-size: 19px;
+    margin: 0;
+    font-weight: 700;
+  }
+  .sheet-header .close-x {
+    color: var(--text-dim);
+    font-size: 15px;
+    background: var(--bg-card);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .sheet-content {
+    padding: 4px 22px 32px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .field {
+    margin-bottom: 18px;
+  }
+  .field label {
+    display: block;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 7px;
+    font-weight: 500;
+  }
+  .field label .req { color: var(--accent); }
+  .field label .opt { color: #565a63; font-weight: 400; }
+
+  .field input[type="text"],
+  .field input[type="number"],
+  .field textarea {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 13px 14px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .field input:focus, .field textarea:focus {
+    border-color: var(--accent);
+  }
+  .field input:disabled, .field textarea:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .field textarea {
+    resize: none;
+    min-height: 70px;
+  }
+
+  .row-2 {
+    display: flex;
+    gap: 12px;
+  }
+  .row-2 .field { flex: 1; }
+
+  .img-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  .img-btn {
+    flex: 1;
+    background: var(--bg-card);
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    padding: 14px 8px;
+    color: var(--text-dim);
+    font-size: 13px;
+    text-align: center;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .img-btn:active { border-color: var(--accent); color: var(--text); }
+  .img-btn svg { width: 20px; height: 20px; }
+
+  .img-preview {
+    position: relative;
+    margin-top: 12px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .img-preview img { width: 100%; display: block; max-height: 180px; object-fit: cover; }
+  .img-preview .remove-img {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.6);
+    border: none;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .save-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #0e0f12;
+    border: none;
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: opacity 0.15s ease, transform 0.1s ease;
+  }
+  .save-btn:active { transform: scale(0.98); }
+  .save-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .pr-note {
+    font-size: 12px;
+    color: var(--text-dim);
+    background: var(--bg-card);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+  .pr-note b { color: var(--accent); }
+
+  .error-text {
+    color: var(--danger);
+    font-size: 12px;
+    margin-top: 6px;
+    min-height: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header>
+    <div class="hero">
+      <div class="momentum-wrap">
+        <h1>MOME<span class="letter-n">N</span>TUM</h1>
+        <div class="hero-line"></div>
+      </div>
+    </div>
+    <p>Trykk på en øvelse for å se den, dobbeltklikk for å logge PR</p>
+  </header>
+
+  <div id="exercise-list"></div>
+</div>
+
+<div id="installBanner">
+  <div id="installText">
+    <strong>Installer Momentum</strong>
+    <span>Legg appen på hjemskjermen din</span>
+  </div>
+  <button id="installBtn">Installer</button>
+  <button id="installDismiss" aria-label="Lukk">✕</button>
+</div>
+
+<button id="fab" aria-label="Legg til øvelse">+</button>
+
+<div id="overlay"></div>
+<div id="sheet">
+  <div class="sheet-handle-wrap" id="dragHandle">
+    <div class="sheet-handle"></div>
+  </div>
+  <div class="sheet-header">
+    <h2 id="sheetTitle">Ny øvelse</h2>
+    <button class="close-x" id="closeBtn">✕</button>
+  </div>
+  <div class="sheet-content">
+
+    <div class="pr-note" id="prNote" style="display:none;"></div>
+
+    <div class="field">
+      <label>Øvelse <span class="req">*</span></label>
+      <input type="text" id="fieldName" placeholder="F.eks. Knebøy" autocomplete="off">
+    </div>
+
+    <div class="row-2">
+      <div class="field">
+        <label>Reps <span class="req">*</span></label>
+        <input type="number" id="fieldReps" placeholder="0" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label>Vekt (kg) <span class="req">*</span></label>
+        <input type="number" id="fieldWeight" placeholder="0" inputmode="decimal">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Kommentar <span class="opt">(valgfritt)</span></label>
+      <textarea id="fieldComment" placeholder="Notater om øvelsen..."></textarea>
+    </div>
+
+    <div class="field" id="imageField">
+      <label>Bilde <span class="opt">(valgfritt)</span></label>
+      <div class="img-buttons">
+        <label class="img-btn">
+          📷 Ta bilde
+          <input type="file" accept="image/*" capture="environment" id="cameraInput" style="display:none;">
+        </label>
+        <label class="img-btn">
+          🖼️ Velg fra galleri
+          <input type="file" accept="image/*" id="galleryInput" style="display:none;">
+        </label>
+      </div>
+      <div id="imgPreviewWrap"></div>
+    </div>
+
+    <div class="error-text" id="errorText"></div>
+    <button class="save-btn" id="saveBtn">Lagre øvelse</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  const STORAGE_KEY = 'momentum-exercises';
+
+  function loadExercises() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      console.error('Kunne ikke lese lagrede øvelser:', e);
+      return [];
+    }
+  }
+
+  function saveExercises() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(exercises));
+    } catch (e) {
+      console.error('Kunne ikke lagre øvelser:', e);
+    }
+  }
+
+  let exercises = loadExercises();
+  let editingId = null; // null = ny øvelse, ellers redigerer eksisterende
+  let currentImage = null;
+
+  const list = document.getElementById('exercise-list');
+  const overlay = document.getElementById('overlay');
+  const sheet = document.getElementById('sheet');
+  const fab = document.getElementById('fab');
+  const closeBtn = document.getElementById('closeBtn');
+  const sheetTitle = document.getElementById('sheetTitle');
+  const prNote = document.getElementById('prNote');
+
+  const fieldName = document.getElementById('fieldName');
+  const fieldReps = document.getElementById('fieldReps');
+  const fieldWeight = document.getElementById('fieldWeight');
+  const fieldComment = document.getElementById('fieldComment');
+  const imageField = document.getElementById('imageField');
+  const imgPreviewWrap = document.getElementById('imgPreviewWrap');
+  const cameraInput = document.getElementById('cameraInput');
+  const galleryInput = document.getElementById('galleryInput');
+  const saveBtn = document.getElementById('saveBtn');
+  const errorText = document.getElementById('errorText');
+
+  function formatDate(d) {
+    return new Date(d).toLocaleDateString('no-NO', { day: '2-digit', month: 'short', year: 'numeric' }) +
+      ' ' + new Date(d).toLocaleTimeString('no-NO', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function capitalizeFirst(str) {
+    if (!str) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  function render() {
+    list.innerHTML = '';
+    if (exercises.length === 0) {
+      list.innerHTML = '<div class="empty-state">Ingen øvelser ennå.<br>Trykk på + for å legge til din første øvelse.</div>';
+      return;
+    }
+    exercises.forEach(ex => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="card-thumb">${ex.image ? `<img src="${ex.image}">` : '🏋️'}</div>
+        <div class="card-body">
+          <div class="card-title">${escapeHtml(ex.name)}</div>
+          <div class="card-meta">
+            <span><b>${ex.weight}</b> kg</span>
+            <span><b>${ex.reps}</b> reps</span>
+          </div>
+          ${ex.comment ? `<div class="card-comment">${escapeHtml(ex.comment)}</div>` : ''}
+          <div class="card-date">Sist PR: ${formatDate(ex.lastEdited)}</div>
+        </div>
+      `;
+      card.addEventListener('dblclick', () => openEdit(ex.id));
+      // touch dobbeltklikk-støtte
+      let lastTap = 0;
+      card.addEventListener('touchend', () => {
+        const now = Date.now();
+        if (now - lastTap < 300) openEdit(ex.id);
+        lastTap = now;
+      });
+      list.appendChild(card);
+    });
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function resetForm() {
+    fieldName.value = '';
+    fieldReps.value = '';
+    fieldWeight.value = '';
+    fieldComment.value = '';
+    currentImage = null;
+    imgPreviewWrap.innerHTML = '';
+    errorText.textContent = '';
+    fieldName.disabled = false;
+    fieldComment.disabled = false;
+    imageField.style.display = 'block';
+  }
+
+  function openNew() {
+    editingId = null;
+    resetForm();
+    sheetTitle.textContent = 'Ny øvelse';
+    prNote.style.display = 'none';
+    openSheet();
+    setTimeout(() => fieldName.focus(), 300);
+  }
+
+  function openEdit(id) {
+    const ex = exercises.find(e => e.id === id);
+    if (!ex) return;
+    editingId = id;
+    resetForm();
+    fieldName.value = ex.name;
+    fieldReps.value = ex.reps;
+    fieldWeight.value = ex.weight;
+    fieldComment.value = ex.comment || '';
+    currentImage = ex.image || null;
+    if (currentImage) renderImagePreview();
+
+    // Låser felt som kun kan settes ved opprettelse
+    fieldName.disabled = true;
+    fieldComment.disabled = true;
+    imageField.style.display = 'none';
+
+    sheetTitle.textContent = ex.name;
+    prNote.style.display = 'block';
+    prNote.innerHTML = `Registrer ny PR. <b>Vekt</b> og <b>reps</b> kan endres — dato lagres automatisk.<br>Forrige PR: ${formatDate(ex.lastEdited)}`;
+    openSheet();
+    setTimeout(() => fieldWeight.focus(), 300);
+  }
+
+  function renderImagePreview() {
+    imgPreviewWrap.innerHTML = `
+      <div class="img-preview">
+        <img src="${currentImage}">
+        <button class="remove-img" id="removeImgBtn">✕</button>
+      </div>
+    `;
+    document.getElementById('removeImgBtn').addEventListener('click', () => {
+      currentImage = null;
+      imgPreviewWrap.innerHTML = '';
+    });
+  }
+
+  function handleFileInput(input) {
+    input.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        currentImage = ev.target.result;
+        renderImagePreview();
+      };
+      reader.readAsDataURL(file);
+      input.value = '';
+    });
+  }
+  handleFileInput(cameraInput);
+  handleFileInput(galleryInput);
+
+  fieldComment.addEventListener('input', () => {
+    const val = fieldComment.value;
+    const cap = capitalizeFirst(val);
+    if (cap !== val) {
+      const pos = fieldComment.selectionStart;
+      fieldComment.value = cap;
+      fieldComment.setSelectionRange(pos, pos);
+    }
+  });
+
+  saveBtn.addEventListener('click', () => {
+    const name = fieldName.value.trim();
+    const reps = fieldReps.value.trim();
+    const weight = fieldWeight.value.trim();
+
+    if (!name || !reps || !weight) {
+      errorText.textContent = 'Øvelse, reps og vekt må fylles ut.';
+      return;
+    }
+    errorText.textContent = '';
+
+    if (editingId === null) {
+      exercises.unshift({
+        id: Date.now().toString(),
+        name,
+        reps,
+        weight,
+        comment: capitalizeFirst(fieldComment.value.trim()),
+        image: currentImage,
+        lastEdited: new Date().toISOString()
+      });
+    } else {
+      const ex = exercises.find(e => e.id === editingId);
+      if (ex) {
+        ex.reps = reps;
+        ex.weight = weight;
+        ex.lastEdited = new Date().toISOString();
+      }
+    }
+    render();
+    saveExercises();
+    closeSheet();
+  });
+
+  function openSheet() {
+    overlay.classList.add('show');
+    sheet.classList.add('show');
+  }
+  function closeSheet() {
+    overlay.classList.remove('show');
+    sheet.classList.remove('show');
+  }
+
+  fab.addEventListener('click', openNew);
+  closeBtn.addEventListener('click', closeSheet);
+  overlay.addEventListener('click', closeSheet);
+
+  // Sveip ned for å lukke
+  const dragHandle = document.getElementById('dragHandle');
+  let startY = 0, currentY = 0, dragging = false;
+
+  function onDragStart(y) {
+    dragging = true;
+    startY = y;
+    currentY = y;
+    sheet.classList.add('dragging');
+  }
+  function onDragMove(y) {
+    if (!dragging) return;
+    currentY = y;
+    const delta = Math.max(0, currentY - startY);
+    sheet.style.transform = `translateY(${delta}px)`;
+  }
+  function onDragEnd() {
+    if (!dragging) return;
+    dragging = false;
+    sheet.classList.remove('dragging');
+    const delta = currentY - startY;
+    sheet.style.transform = '';
+    if (delta > 120) {
+      closeSheet();
+    }
+  }
+
+  dragHandle.addEventListener('touchstart', (e) => onDragStart(e.touches[0].clientY), { passive: true });
+  dragHandle.addEventListener('touchmove', (e) => onDragMove(e.touches[0].clientY), { passive: true });
+  dragHandle.addEventListener('touchend', onDragEnd);
+
+  dragHandle.addEventListener('mousedown', (e) => {
+    onDragStart(e.clientY);
+    const move = (ev) => onDragMove(ev.clientY);
+    const up = () => {
+      onDragEnd();
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+    };
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+  });
+
+  render();
+
+  // --- Service worker (offline + installasjon) ---
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('service-worker.js').catch((e) => {
+        console.error('Service worker-registrering feilet:', e);
+      });
+    });
+  }
+
+  // --- "Legg til app"-banner (Chrome/Android) ---
+  const installBanner = document.getElementById('installBanner');
+  const installBtn = document.getElementById('installBtn');
+  const installDismiss = document.getElementById('installDismiss');
+  let deferredPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (!localStorage.getItem('momentum-install-dismissed')) {
+      installBanner.classList.add('show');
+    }
+  });
+
+  installBtn && installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    installBanner.classList.remove('show');
+  });
+
+  installDismiss && installDismiss.addEventListener('click', () => {
+    installBanner.classList.remove('show');
+    localStorage.setItem('momentum-install-dismissed', '1');
+  });
+
+  window.addEventListener('appinstalled', () => {
+    installBanner.classList.remove('show');
+  });
+})();
+</script>
+
+</body>
+</html>
