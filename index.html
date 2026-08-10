@@ -144,6 +144,12 @@
     border-color: #3a3e47;
   }
 
+  .card.holding {
+    border-color: var(--accent);
+    transform: scale(0.97);
+    transition: border-color 1s linear, transform 0.2s ease;
+  }
+
   .card-thumb {
     width: 52px;
     height: 52px;
@@ -487,7 +493,7 @@
         <div class="hero-line"></div>
       </div>
     </div>
-    <p>Trykk på en øvelse for å se den, dobbeltklikk for å logge PR</p>
+    <p>Trykk og hold på en øvelse for å logge PR</p>
   </header>
 
   <div id="exercise-list"></div>
@@ -634,16 +640,33 @@
           <div class="card-date">Sist PR: ${formatDate(ex.lastEdited)}</div>
         </div>
       `;
-      card.addEventListener('dblclick', () => openEdit(ex.id));
-      // touch dobbeltklikk-støtte
-      let lastTap = 0;
-      card.addEventListener('touchend', () => {
-        const now = Date.now();
-        if (now - lastTap < 300) openEdit(ex.id);
-        lastTap = now;
-      });
+      attachLongPress(card, () => openEdit(ex.id));
       list.appendChild(card);
     });
+  }
+
+  function attachLongPress(el, callback, duration = 1000) {
+    let timer = null;
+
+    const start = (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      el.classList.add('holding');
+      timer = setTimeout(() => {
+        el.classList.remove('holding');
+        if (navigator.vibrate) navigator.vibrate(15);
+        callback();
+      }, duration);
+    };
+    const cancel = () => {
+      clearTimeout(timer);
+      el.classList.remove('holding');
+    };
+
+    el.addEventListener('pointerdown', start);
+    el.addEventListener('pointerup', cancel);
+    el.addEventListener('pointerleave', cancel);
+    el.addEventListener('pointercancel', cancel);
+    el.addEventListener('contextmenu', (e) => e.preventDefault());
   }
 
   function escapeHtml(str) {
