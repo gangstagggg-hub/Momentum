@@ -481,22 +481,371 @@
     margin-top: 6px;
     min-height: 14px;
   }
+
+  /* --- Øvelse: velg fra liste + forklaring --- */
+  .name-row {
+    display: flex;
+    gap: 8px;
+  }
+  .name-row input { flex: 1; }
+  .icon-btn {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-dim);
+    font-size: 17px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+  .icon-btn:active { border-color: var(--accent); color: var(--accent); }
+
+  .suggestion-text {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+  .suggestion-text b {
+    color: var(--accent);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .explain-btn {
+    width: 100%;
+    margin-top: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 11px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--accent);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: opacity 0.15s ease, border-color 0.15s ease;
+  }
+  .explain-btn:disabled {
+    opacity: 0.35;
+    color: var(--text-dim);
+    cursor: not-allowed;
+  }
+  .explain-btn:not(:disabled):active { border-color: var(--accent); }
+
+  /* --- Picker sheet (velg øvelse) --- */
+  #pickerOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 41;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  #pickerOverlay.show { opacity: 1; pointer-events: auto; }
+
+  #pickerSheet {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 64px;
+    max-width: 480px;
+    margin: 0 auto;
+    background: var(--bg-elevated);
+    border-radius: 24px 24px 0 0;
+    z-index: 42;
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(.32,.72,0,1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-bottom: none;
+  }
+  #pickerSheet.show { transform: translateY(0); }
+  #pickerSheet.dragging { transition: none; }
+
+  #pickerList {
+    padding: 4px 22px 32px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .picker-item {
+    padding: 14px 2px;
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+  .picker-item:last-child { border-bottom: none; }
+  .picker-item:active { color: var(--accent); }
+
+  /* --- Forklaringsmodal --- */
+  #explainOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 51;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  #explainOverlay.show { opacity: 1; pointer-events: auto; }
+
+  #explainModal {
+    position: fixed;
+    left: 20px;
+    right: 20px;
+    top: 50%;
+    max-width: 440px;
+    margin: 0 auto;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    z-index: 52;
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: translate(0, -50%) scale(0.94);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+  #explainModal.show {
+    transform: translate(0, -50%) scale(1);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .explain-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 20px 14px;
+    flex-shrink: 0;
+  }
+  .explain-header h2 {
+    font-size: 18px;
+    margin: 0;
+    font-weight: 700;
+  }
+  .explain-body {
+    padding: 0 20px 22px;
+    overflow-y: auto;
+  }
+  .explain-section { margin-bottom: 16px; }
+  .explain-section:last-child { margin-bottom: 0; }
+  .explain-label {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    margin: 0 0 6px;
+    font-weight: 700;
+  }
+  .explain-section p:not(.explain-label) {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--text);
+    margin: 0;
+  }
+
+  /* --- Header topp-rad med nav-knapp --- */
+  .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .nav-icon-btn {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+  .nav-icon-btn:active { border-color: var(--accent); }
+
+  /* --- Muskelside --- */
+  #musclePage {
+    position: absolute;
+    inset: 0;
+    background: var(--bg);
+    z-index: 15;
+    display: none;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 28px 20px 120px;
+  }
+  #musclePage.show { display: flex; }
+
+  .muscle-page-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .muscle-page-header h2 {
+    font-size: 19px;
+    margin: 0;
+    font-weight: 700;
+  }
+  .muscle-page-header p {
+    margin: 3px 0 0;
+    font-size: 12.5px;
+    color: var(--text-dim);
+  }
+
+  .body-map-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .body-tab {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .body-tab.active {
+    color: #0e0f12;
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  #bodyMapContainer {
+    display: flex;
+    justify-content: center;
+    padding: 12px 0 8px;
+  }
+  .body-svg {
+    width: 100%;
+    max-width: 220px;
+    height: auto;
+  }
+
+  .muscle-section-label {
+    color: var(--text-dim);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 20px 0 12px;
+  }
+
+  #muscleButtons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .muscle-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .muscle-card.pulse {
+    border-color: var(--accent);
+    transform: scale(0.98);
+  }
+  .muscle-name {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .muscle-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .muscle-minus {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .muscle-minus:active { border-color: var(--accent); color: var(--accent); }
+  .muscle-count {
+    min-width: 22px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent);
+  }
 </style>
 </head>
 <body>
 
 <div id="app">
   <header>
-    <div class="hero">
-      <div class="momentum-wrap">
-        <h1>MOME<span class="letter-n">N</span>TUM</h1>
-        <div class="hero-line"></div>
+    <div class="header-top">
+      <div class="hero">
+        <div class="momentum-wrap">
+          <h1>MOME<span class="letter-n">N</span>TUM</h1>
+          <div class="hero-line"></div>
+        </div>
       </div>
+      <button id="musclesNavBtn" class="nav-icon-btn" aria-label="Muskelstatus">💪</button>
     </div>
     <p>Trykk og hold på en øvelse for å logge PR</p>
   </header>
 
   <div id="exercise-list"></div>
+</div>
+
+<div id="musclePage">
+  <div class="muscle-page-header">
+    <button id="backFromMuscles" class="nav-icon-btn" aria-label="Tilbake">←</button>
+    <div>
+      <h2>Muskelstatus</h2>
+      <p id="weekLabel">Uke</p>
+    </div>
+  </div>
+
+  <div class="body-map-tabs">
+    <button class="body-tab active" data-view="front">Front</button>
+    <button class="body-tab" data-view="back">Bak</button>
+  </div>
+  <div id="bodyMapContainer"></div>
+
+  <p class="muscle-section-label">Denne ukens treninger</p>
+  <div id="muscleButtons"></div>
 </div>
 
 <div id="installBanner">
@@ -525,7 +874,12 @@
 
     <div class="field">
       <label>Øvelse <span class="req">*</span></label>
-      <input type="text" id="fieldName" placeholder="F.eks. Knebøy" autocomplete="off">
+      <div class="name-row">
+        <input type="text" id="fieldName" placeholder="F.eks. Knebøy" autocomplete="off">
+        <button type="button" id="pickExerciseBtn" class="icon-btn" aria-label="Velg øvelse fra liste">☰</button>
+      </div>
+      <div id="suggestionText" class="suggestion-text" style="display:none;"></div>
+      <button type="button" id="explainBtn" class="explain-btn" disabled>ⓘ Forklaring</button>
     </div>
 
     <div class="row-2">
@@ -564,8 +918,287 @@
   </div>
 </div>
 
+<div id="pickerOverlay"></div>
+<div id="pickerSheet">
+  <div class="sheet-handle-wrap" id="pickerDragHandle">
+    <div class="sheet-handle"></div>
+  </div>
+  <div class="sheet-header">
+    <h2>Velg øvelse</h2>
+    <button class="close-x" id="pickerCloseBtn">✕</button>
+  </div>
+  <div class="sheet-content" id="pickerList"></div>
+</div>
+
+<div id="explainOverlay"></div>
+<div id="explainModal">
+  <div class="explain-header">
+    <h2 id="explainTitle">Øvelse</h2>
+    <button class="close-x" id="explainCloseBtn">✕</button>
+  </div>
+  <div class="explain-body">
+    <div class="explain-section">
+      <p class="explain-label">Utførelse</p>
+      <p id="explainHowTo"></p>
+    </div>
+    <div class="explain-section">
+      <p class="explain-label">Muskler som trenes</p>
+      <p id="explainMuscles"></p>
+    </div>
+  </div>
+</div>
+
 <script>
 (function () {
+  // --- Database med de 50 mest vanlige øvelsene globalt ---
+  const EXERCISE_LIBRARY = [
+    { name: "Armhevinger", muscles: "Bryst, skuldre (fremre) og triceps. Kjernemuskulaturen jobber for å holde kroppen stabil.", howTo: "Start i planke-posisjon med hendene rett under skuldrene. Senk kroppen kontrollert til brystet nesten treffer gulvet, hold kroppen rett som en planke, press deg opp igjen." },
+    { name: "Beinpress", muscles: "Quadriceps (forlår), setemuskler og noe hamstrings.", howTo: "Sitt i beinpressmaskinen med føttene skulderbredde fra hverandre på plattformen. Bøy knærne til ca. 90 grader, press deretter fra hælene til beina er nesten strake, uten å låse knærne helt." },
+    { name: "Benkpress", muscles: "Bryst, fremre skuldre og triceps.", howTo: "Ligg på ryggen på en flat benk med stangen over brystet. Senk stangen kontrollert ned til den nesten berører brystet, press den deretter rett opp til armene er strake." },
+    { name: "Benkpress med hantler", muscles: "Bryst, fremre skuldre og triceps, med litt større bevegelsesutslag enn med stang.", howTo: "Ligg på en flat benk med en hantel i hver hånd over brystet. Senk hantlene kontrollert ned til siden av brystet, press dem deretter opp til armene er strake." },
+    { name: "Biceps curl med hantel", muscles: "Biceps (overarmens bøyemuskel) og noe underarm.", howTo: "Stå med en hantel i hver hånd, armene langs siden. Bøy albuene og løft hantlene mot skuldrene uten å svinge overkroppen, senk kontrollert ned igjen." },
+    { name: "Bulgarian split squat", muscles: "Quadriceps, setemuskler og hamstrings, samt balanse/kjerne.", howTo: "Stå foran en benk, plasser den ene foten bak deg oppå benken. Bøy det fremre kneet og senk hoftene rett ned, press deg opp igjen gjennom hælen på fremre fot." },
+    { name: "Cable crossover", muscles: "Bryst (spesielt indre bryst) og fremre skuldre.", howTo: "Stå midt mellom to kabeltårn med et håndtak i hver hånd, armene ut til siden. Før hendene sammen foran kroppen i en buet bevegelse, kontroller vekten tilbake til start." },
+    { name: "Chin-ups", muscles: "Bicepstunge rygg (latissimus dorsi og øvre rygg) og biceps, med undertaksgrep.", howTo: "Heng i en stang med undertak (håndflatene mot deg), skulderbredde eller smalere. Trekk kroppen opp til haken er over stangen, senk kontrollert ned igjen." },
+    { name: "Dips", muscles: "Triceps, nedre bryst og fremre skuldre.", howTo: "Ta tak i to parallelle stenger med strake armer. Senk kroppen ved å bøye albuene til overarmene er nesten parallelle med gulvet, press deg opp igjen." },
+    { name: "Face pull", muscles: "Bakre skuldre, øvre rygg og rotatormansjett.", howTo: "Bruk et tau i en kabelmaskin i ansikts- eller brysthøyde. Trekk tauet mot ansiktet med albuene høyt, slik at hendene ender på hver side av hodet." },
+    { name: "Fransk press", muscles: "Triceps (bakside overarm).", howTo: "Ligg eller stå med en stang eller hantel over hodet med strake armer. Bøy kun i albuene og senk vekten bak hodet, press deretter tilbake til startposisjon." },
+    { name: "Frontbøy", muscles: "Quadriceps hovedsakelig, samt setemuskler og kjernemuskulatur.", howTo: "Hold en stang foran skuldrene med albuene høye. Bøy knær og hofter kontrollert ned i en knebøy, press deg opp igjen med vekten fremdeles foran skuldrene." },
+    { name: "Good morning", muscles: "Hamstrings, setemuskler og korsrygg.", howTo: "Stå med en stang på øvre rygg. Med lett bøyde knær, bøy overkroppen forover fra hoftene til den er nesten parallell med gulvet, rett deg opp igjen ved å strekke i hoftene." },
+    { name: "Hantelrow", muscles: "Rygg (latissimus dorsi, øvre rygg) og biceps.", howTo: "Støtt en hånd og et kne på en benk, hold en hantel i den andre hånden med strak arm. Trekk hantelen opp mot hoften, senk kontrollert ned igjen." },
+    { name: "Hip thrust", muscles: "Setemuskler hovedsakelig, samt hamstrings.", howTo: "Len øvre rygg mot en benk med en vektstang over hoftene, føttene i gulvet. Press hoftene opp til kroppen danner en rett linje fra knær til skuldre, senk kontrollert ned." },
+    { name: "Kettlebell swing", muscles: "Setemuskler, hamstrings og korsrygg, med noe involvering av kjerne og skuldre.", howTo: "Stå med kettlebellen foran deg, hoftene bøyd. Sving kettlebellen mellom beina og bruk et kraftig hoftedytt for å svinge den opp til brysthøyde, la den svinge tilbake." },
+    { name: "Knebøy", muscles: "Quadriceps, setemuskler, hamstrings og kjernemuskulatur.", howTo: "Stå med stangen på øvre rygg, føttene skulderbredde fra hverandre. Bøy knær og hofter og senk hoftene ned som om du skal sette deg på en stol, press deg opp igjen." },
+    { name: "Kroppshevinger", muscles: "Rygg (latissimus dorsi) og biceps, med overtaksgrep.", howTo: "Heng i en stang med overtak (håndflatene fra deg), litt bredere enn skulderbredde. Trekk kroppen opp til haken er over stangen, senk kontrollert ned igjen." },
+    { name: "Laterale hev", muscles: "Sideskuldre (laterale deltoid).", howTo: "Stå med en hantel i hver hånd langs siden. Løft armene ut til siden til de er omtrent i skulderhøyde, senk kontrollert ned igjen." },
+    { name: "Markløft", muscles: "Hele bakkjeden: setemuskler, hamstrings, korsrygg, samt grep og øvre rygg.", howTo: "Stå med stangen over midtfoten. Bøy deg ned med rett rygg og grip stangen, løft den ved å strekke hofter og knær samtidig til du står oppreist." },
+    { name: "Markløft med strake bein", muscles: "Hamstrings og setemuskler, samt korsrygg.", howTo: "Hold en stang foran lårene med nesten strake knær. Senk stangen langs beina ved å bøye i hoftene til du kjenner strekk i hamstrings, rett deg opp igjen." },
+    { name: "Nedtrekk i kabel", muscles: "Rygg (latissimus dorsi) og biceps.", howTo: "Sitt ved en nedtrekksmaskin og grip stangen bredere enn skulderbredde. Trekk stangen ned mot øvre bryst, la den kontrollert tilbake opp igjen." },
+    { name: "Overhead press", muscles: "Skuldre (spesielt fremre), triceps og øvre bryst.", howTo: "Stå med stangen ved skulderhøyde, grep litt bredere enn skulderbredde. Press stangen rett opp over hodet til armene er strake, senk kontrollert ned igjen." },
+    { name: "Planke", muscles: "Kjernemuskulatur (mage og korsrygg), samt skuldre.", howTo: "Støtt deg på underarmer og tær med kroppen i en rett linje fra hode til hæler. Hold spenningen i mage og sete uten å la hoftene synke eller løftes." },
+    { name: "Roing i kabel sittende", muscles: "Rygg (midtre rygg) og biceps.", howTo: "Sitt med føttene i støttene og grip håndtaket med strake armer. Trekk håndtaket mot magen mens du klemmer skulderbladene sammen, la det kontrollert tilbake." },
+    { name: "Roing med stang", muscles: "Rygg (midtre og øvre rygg), biceps og bakre skuldre.", howTo: "Bøy overkroppen forover med rett rygg, hold stangen med strake armer. Trekk stangen opp mot magen mens du klemmer skulderbladene sammen, senk kontrollert ned." },
+    { name: "Russian twist", muscles: "Skrå magemuskler og kjernemuskulatur.", howTo: "Sitt med overkroppen lent litt bakover og føttene løftet eller i gulvet. Vri overkroppen fra side til side, gjerne med en vekt i hendene." },
+    { name: "Sittende beinbøy", muscles: "Hamstrings (baksiden av låret).", howTo: "Sitt i maskinen med puten over ankler. Bøy knærne og trekk puten ned mot setet, la den kontrollert tilbake opp igjen." },
+    { name: "Sittende beinspark", muscles: "Quadriceps (forsiden av låret).", howTo: "Sitt i maskinen med puten over ankler. Strekk knærne til beina er nesten rette, senk kontrollert ned igjen." },
+    { name: "Situps", muscles: "Rette magemuskler og hoftebøyere.", howTo: "Ligg på ryggen med bøyde knær og føttene i gulvet. Løft overkroppen opp mot knærne ved å bøye i mageregionen, senk kontrollert ned igjen." },
+    { name: "Skråbenkpress", muscles: "Øvre bryst, fremre skuldre og triceps.", howTo: "Ligg på en benk vinklet 30-45 grader med stangen over øvre bryst. Senk stangen kontrollert ned til øvre bryst, press den deretter opp igjen." },
+    { name: "Skulderpress med hantler", muscles: "Skuldre og triceps.", howTo: "Sitt eller stå med en hantel i hver hånd ved skulderhøyde. Press hantlene rett opp til armene er nesten strake, senk kontrollert ned igjen." },
+    { name: "Stang curl", muscles: "Biceps og underarm.", howTo: "Stå med en stang foran lårene, grep skulderbredde. Bøy albuene og løft stangen mot brystet uten å svinge kroppen, senk kontrollert ned igjen." },
+    { name: "Step-ups", muscles: "Quadriceps, setemuskler og hamstrings.", howTo: "Stå foran en kasse eller benk. Sett en fot opp på kassen og press deg opp gjennom hælen til du står oppreist på kassen, gå kontrollert ned igjen." },
+    { name: "Stående tåhev", muscles: "Legger (tricep surae).", howTo: "Stå oppreist, gjerne med vekt på skuldrene. Løft hælene opp så høyt som mulig ved å strekke ankelen, senk kontrollert ned igjen." },
+    { name: "Sittende tåhev", muscles: "Legger, med mer fokus på den indre leggmuskelen (soleus).", howTo: "Sitt med vekt over knærne og forfoten på en kant. Løft hælene så høyt som mulig, senk kontrollert ned igjen." },
+    { name: "Strak-arm nedtrekk", muscles: "Rygg (latissimus dorsi) med minimal biceps-involvering.", howTo: "Stå foran en kabelmaskin med stangen over hodet og strake armer. Trekk stangen ned mot lårene med rette armer, la den kontrollert tilbake opp." },
+    { name: "Superman", muscles: "Korsrygg, setemuskler og bakre skuldre.", howTo: "Ligg på magen med armene strukket frem. Løft armer, bryst og bein samtidig fra gulvet, hold kort og senk kontrollert ned igjen." },
+    { name: "Sittende skulderpress i maskin", muscles: "Skuldre og triceps.", howTo: "Sitt i maskinen med håndtakene ved skulderhøyde. Press håndtakene rett opp til armene er nesten strake, senk kontrollert ned igjen." },
+    { name: "Triceps kickback", muscles: "Triceps (bakside overarm).", howTo: "Bøy overkroppen forover med en hantel i hånden, overarmen langs siden parallell med gulvet. Strekk albuen bakover til armen er rett, bøy kontrollert tilbake." },
+    { name: "Triceps pushdown i kabel", muscles: "Triceps (bakside overarm).", howTo: "Stå foran en kabelmaskin med et tau eller stang i høyt grep, albuene inntil siden. Press vekten ned til armene er strake, la den kontrollert tilbake opp." },
+    { name: "Utfall", muscles: "Quadriceps, setemuskler og hamstrings, samt balanse.", howTo: "Stå oppreist og ta et langt steg fremover. Bøy begge knær til det bakre kneet nesten berører gulvet, press deg tilbake til start." },
+    { name: "Vektløft rykk", muscles: "Hele kroppen: bein, hofter, rygg og skuldre, med stort fokus på eksplosivitet.", howTo: "Løft stangen fra gulvet i én sammenhengende, eksplosiv bevegelse rett opp over hodet mens du synker under stangen i en knebøyposisjon." },
+    { name: "Vektløft støt", muscles: "Hele kroppen, spesielt bein, hofter og skuldre.", howTo: "Løft stangen fra gulvet opp til skuldrene (clean), rett deg opp, press eller driv deretter stangen eksplosivt over hodet (jerk)." },
+    { name: "Vippende roing", muscles: "Midtre rygg og biceps, med fokus på én side av gangen.", howTo: "Stå over en stang festet i den ene enden, overkroppen bøyd forover. Trekk stangen opp mot brystet med begge hender på håndtaket, senk kontrollert ned igjen." },
+    { name: "Ryggextensjon", muscles: "Korsrygg og setemuskler.", howTo: "Legg deg med hoftene på puten i en ryggextensjonsbenk, ankler festet. Senk overkroppen forover kontrollert, rett deg opp igjen til kroppen er rett." },
+    { name: "Butterfly i maskin", muscles: "Bryst (spesielt indre bryst) og fremre skuldre.", howTo: "Sitt i maskinen med albuene på putene i brysthøyde. Før armene sammen foran brystet i en buet bevegelse, la dem kontrollert tilbake." },
+    { name: "Mageroller", muscles: "Kjernemuskulatur, spesielt rette magemuskler, samt skuldre.", howTo: "Stå på knærne og hold et rullehjul foran deg. Rull hjulet fremover mens du holder kroppen stram, trekk deg tilbake til start ved å bruke magen." },
+    { name: "Fransk press med hantel", muscles: "Triceps (bakside overarm).", howTo: "Sitt eller stå og hold en hantel med begge hender over hodet. Senk hantelen bak hodet ved å bøye albuene, press tilbake opp til strake armer." },
+    { name: "Cross-over på kabel nedenfra", muscles: "Øvre bryst og fremre skuldre.", howTo: "Still deg mellom to kabeltårn med håndtakene lavt. Før hendene oppover og sammen foran overkroppen, kontroller vekten tilbake til start." }
+  ];
+  EXERCISE_LIBRARY.sort((a, b) => a.name.localeCompare(b.name, 'no'));
+
+  function normalize(str) {
+    return (str || '').trim().toLowerCase();
+  }
+
+  function findExactExercise(name) {
+    const n = normalize(name);
+    if (!n) return null;
+    return EXERCISE_LIBRARY.find(e => normalize(e.name) === n) || null;
+  }
+
+  function levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    if (m === 0) return n;
+    if (n === 0) return m;
+    const dp = [];
+    for (let i = 0; i <= m; i++) dp.push(new Array(n + 1).fill(0));
+    for (let i = 0; i <= m; i++) dp[i][0] = i;
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
+    for (let i = 1; i <= m; i++) {
+      for (let j = 1; j <= n; j++) {
+        dp[i][j] = a[i - 1] === b[j - 1]
+          ? dp[i - 1][j - 1]
+          : 1 + Math.min(dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1]);
+      }
+    }
+    return dp[m][n];
+  }
+
+  function findClosestExercise(name) {
+    const n = normalize(name);
+    if (n.length < 3) return null;
+    let best = null;
+    let bestDist = Infinity;
+    EXERCISE_LIBRARY.forEach(e => {
+      const d = levenshtein(n, normalize(e.name));
+      if (d < bestDist) { bestDist = d; best = e; }
+    });
+    if (!best) return null;
+    const threshold = Math.max(2, Math.floor(best.name.length * 0.3));
+    return bestDist > 0 && bestDist <= threshold ? best : null;
+  }
+
+  // --- Muskelstatus (ukebasert) ---
+  const MUSCLES = [
+    { id: 'abs', name: 'Mage', view: 'front' },
+    { id: 'back', name: 'Rygg', view: 'back' },
+    { id: 'biceps', name: 'Biceps', view: 'front' },
+    { id: 'calves', name: 'Legger', view: 'front' },
+    { id: 'chest', name: 'Bryst', view: 'front' },
+    { id: 'forearms', name: 'Underarmer', view: 'front' },
+    { id: 'glutes', name: 'Setemuskler', view: 'back' },
+    { id: 'hamstrings', name: 'Baklår', view: 'back' },
+    { id: 'quads', name: 'Forlår', view: 'front' },
+    { id: 'shoulders', name: 'Skuldre', view: 'front' },
+    { id: 'triceps', name: 'Triceps', view: 'back' }
+  ];
+
+  const FRONT_REGIONS = [
+    { id: 'shoulders', rects: [{ x: 64, y: 50, width: 24, height: 18, rx: 9 }, { x: 112, y: 50, width: 24, height: 18, rx: 9 }] },
+    { id: 'chest', rects: [{ x: 72, y: 72, width: 56, height: 30, rx: 10 }] },
+    { id: 'abs', rects: [{ x: 76, y: 106, width: 48, height: 46, rx: 10 }] },
+    { id: 'biceps', rects: [{ x: 30, y: 64, width: 18, height: 40, rx: 9 }, { x: 152, y: 64, width: 18, height: 40, rx: 9 }] },
+    { id: 'forearms', rects: [{ x: 30, y: 108, width: 18, height: 46, rx: 9 }, { x: 152, y: 108, width: 18, height: 46, rx: 9 }] },
+    { id: 'quads', rects: [{ x: 72, y: 172, width: 22, height: 62, rx: 10 }, { x: 106, y: 172, width: 22, height: 62, rx: 10 }] },
+    { id: 'calves', rects: [{ x: 72, y: 240, width: 22, height: 54, rx: 10 }, { x: 106, y: 240, width: 22, height: 54, rx: 10 }] }
+  ];
+
+  const BACK_REGIONS = [
+    { id: 'back', rects: [{ x: 68, y: 54, width: 64, height: 62, rx: 14 }] },
+    { id: 'triceps', rects: [{ x: 30, y: 64, width: 18, height: 40, rx: 9 }, { x: 152, y: 64, width: 18, height: 40, rx: 9 }] },
+    { id: 'glutes', rects: [{ x: 70, y: 168, width: 60, height: 30, rx: 15 }] },
+    { id: 'hamstrings', rects: [{ x: 72, y: 200, width: 22, height: 60, rx: 10 }, { x: 106, y: 200, width: 22, height: 60, rx: 10 }] }
+  ];
+
+  const MUSCLE_STORAGE_KEY = 'momentum-muscle-weeks';
+
+  function loadMuscleWeeks() {
+    try {
+      const raw = localStorage.getItem(MUSCLE_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      console.error('Kunne ikke lese muskeldata:', e);
+      return {};
+    }
+  }
+
+  function saveMuscleWeeks() {
+    try {
+      localStorage.setItem(MUSCLE_STORAGE_KEY, JSON.stringify(muscleWeeks));
+    } catch (e) {
+      console.error('Kunne ikke lagre muskeldata:', e);
+    }
+  }
+
+  let muscleWeeks = loadMuscleWeeks();
+  let currentBodyView = 'front';
+
+  function getWeekInfo(d = new Date()) {
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = (date.getUTCDay() + 6) % 7;
+    date.setUTCDate(date.getUTCDate() - dayNum + 3);
+    const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+    const weekNum = 1 + Math.round(((date - firstThursday) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7);
+    return { key: `${date.getUTCFullYear()}-U${String(weekNum).padStart(2, '0')}`, week: weekNum, year: date.getUTCFullYear() };
+  }
+
+  function getCurrentWeekCounts() {
+    const info = getWeekInfo();
+    if (!muscleWeeks[info.key]) muscleWeeks[info.key] = {};
+    return muscleWeeks[info.key];
+  }
+
+  function muscleColor(count) {
+    if (!count) return 'rgba(255,255,255,0.05)';
+    const capped = Math.min(count, 6);
+    const opacity = (0.18 + capped * 0.13).toFixed(2);
+    return `rgba(255,107,107,${opacity})`;
+  }
+
+  function attachDoubleTap(el, callback) {
+    let lastTap = 0;
+    el.addEventListener('pointerup', (e) => {
+      if (e.target.closest('.muscle-minus')) return;
+      const now = Date.now();
+      if (now - lastTap < 350) {
+        callback();
+        lastTap = 0;
+      } else {
+        lastTap = now;
+      }
+    });
+  }
+
+  function renderBodyMap(view, counts) {
+    const regions = view === 'front' ? FRONT_REGIONS : BACK_REGIONS;
+    const overlay = regions.map(r => {
+      const color = muscleColor(counts[r.id] || 0);
+      return r.rects.map(rect =>
+        `<rect x="${rect.x}" y="${rect.y}" width="${rect.width}" height="${rect.height}" rx="${rect.rx}" fill="${color}" />`
+      ).join('');
+    }).join('');
+
+    bodyMapContainer.innerHTML = `
+      <svg viewBox="0 0 200 320" class="body-svg">
+        <circle cx="100" cy="26" r="18" fill="#1b1e24" stroke="#2a2d34" stroke-width="2" />
+        <rect x="62" y="50" width="76" height="110" rx="20" fill="#1b1e24" stroke="#2a2d34" stroke-width="2" />
+        <rect x="28" y="58" width="22" height="100" rx="11" fill="#1b1e24" stroke="#2a2d34" stroke-width="2" />
+        <rect x="150" y="58" width="22" height="100" rx="11" fill="#1b1e24" stroke="#2a2d34" stroke-width="2" />
+        <rect x="70" y="168" width="26" height="130" rx="13" fill="#1b1e24" stroke="#2a2d34" stroke-width="2" />
+        <rect x="104" y="168" width="26" height="130" rx="13" fill="#1b1e24" stroke="#2a2d34" stroke-width="2" />
+        ${overlay}
+      </svg>
+    `;
+  }
+
+  function renderMuscleButtons(counts) {
+    muscleButtonsEl.innerHTML = '';
+    const sorted = [...MUSCLES].sort((a, b) => a.name.localeCompare(b.name, 'no'));
+    sorted.forEach(m => {
+      const count = counts[m.id] || 0;
+      const card = document.createElement('div');
+      card.className = 'muscle-card';
+      card.innerHTML = `
+        <span class="muscle-name">${escapeHtml(m.name)}</span>
+        <div class="muscle-controls">
+          <button type="button" class="muscle-minus" aria-label="Reduser">–</button>
+          <span class="muscle-count">${count}</span>
+        </div>
+      `;
+      card.querySelector('.muscle-minus').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const c = getCurrentWeekCounts();
+        c[m.id] = Math.max(0, (c[m.id] || 0) - 1);
+        saveMuscleWeeks();
+        renderMusclePage();
+      });
+      attachDoubleTap(card, () => {
+        const c = getCurrentWeekCounts();
+        c[m.id] = (c[m.id] || 0) + 1;
+        saveMuscleWeeks();
+        renderMusclePage();
+      });
+      muscleButtonsEl.appendChild(card);
+    });
+  }
+
+  function renderMusclePage() {
+    const info = getWeekInfo();
+    weekLabel.textContent = `Uke ${info.week} · ${info.year}`;
+    const counts = getCurrentWeekCounts();
+    renderMuscleButtons(counts);
+    renderBodyMap(currentBodyView, counts);
+  }
+
   const STORAGE_KEY = 'momentum-exercises';
 
   function loadExercises() {
@@ -578,7 +1211,7 @@
     }
   }
 
-  function saveExercises() {
+  function saveExercisesToStorage() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(exercises));
     } catch (e) {
@@ -589,6 +1222,7 @@
   let exercises = loadExercises();
   let editingId = null; // null = ny øvelse, ellers redigerer eksisterende
   let currentImage = null;
+  let selectedExercise = null; // matchet øvelse fra biblioteket, for forklaring
 
   const list = document.getElementById('exercise-list');
   const overlay = document.getElementById('overlay');
@@ -608,6 +1242,29 @@
   const galleryInput = document.getElementById('galleryInput');
   const saveBtn = document.getElementById('saveBtn');
   const errorText = document.getElementById('errorText');
+
+  const pickExerciseBtn = document.getElementById('pickExerciseBtn');
+  const explainBtn = document.getElementById('explainBtn');
+  const suggestionText = document.getElementById('suggestionText');
+  const pickerOverlay = document.getElementById('pickerOverlay');
+  const pickerSheet = document.getElementById('pickerSheet');
+  const pickerList = document.getElementById('pickerList');
+  const pickerCloseBtn = document.getElementById('pickerCloseBtn');
+  const pickerDragHandle = document.getElementById('pickerDragHandle');
+  const explainOverlay = document.getElementById('explainOverlay');
+  const explainModal = document.getElementById('explainModal');
+  const explainCloseBtn = document.getElementById('explainCloseBtn');
+  const explainTitle = document.getElementById('explainTitle');
+  const explainHowTo = document.getElementById('explainHowTo');
+  const explainMuscles = document.getElementById('explainMuscles');
+
+  const musclesNavBtn = document.getElementById('musclesNavBtn');
+  const musclePage = document.getElementById('musclePage');
+  const backFromMuscles = document.getElementById('backFromMuscles');
+  const weekLabel = document.getElementById('weekLabel');
+  const bodyMapContainer = document.getElementById('bodyMapContainer');
+  const muscleButtonsEl = document.getElementById('muscleButtons');
+  const bodyTabs = document.querySelectorAll('.body-tab');
 
   function formatDate(d) {
     return new Date(d).toLocaleDateString('no-NO', { day: '2-digit', month: 'short', year: 'numeric' }) +
@@ -686,6 +1343,35 @@
     fieldName.disabled = false;
     fieldComment.disabled = false;
     imageField.style.display = 'block';
+    pickExerciseBtn.style.display = 'flex';
+    updateExerciseMatch();
+  }
+
+  function updateExerciseMatch() {
+    const val = fieldName.value;
+    const exact = findExactExercise(val);
+    if (exact) {
+      selectedExercise = exact;
+      explainBtn.disabled = false;
+      suggestionText.style.display = 'none';
+      suggestionText.innerHTML = '';
+      return;
+    }
+    selectedExercise = null;
+    explainBtn.disabled = true;
+    const closest = findClosestExercise(val);
+    if (closest) {
+      suggestionText.style.display = 'block';
+      suggestionText.innerHTML = `Mener du «<b id="suggestMatch">${escapeHtml(closest.name)}</b>»?`;
+      const btn = document.getElementById('suggestMatch');
+      btn.addEventListener('click', () => {
+        fieldName.value = closest.name;
+        updateExerciseMatch();
+      });
+    } else {
+      suggestionText.style.display = 'none';
+      suggestionText.innerHTML = '';
+    }
   }
 
   function openNew() {
@@ -708,15 +1394,15 @@
     fieldComment.value = ex.comment || '';
     currentImage = ex.image || null;
     if (currentImage) renderImagePreview();
+    updateExerciseMatch();
 
-    // Låser felt som kun kan settes ved opprettelse
-    fieldName.disabled = true;
+    // Kommentar og bilde settes kun ved opprettelse; navn kan endres når som helst
     fieldComment.disabled = true;
     imageField.style.display = 'none';
 
     sheetTitle.textContent = ex.name;
     prNote.style.display = 'block';
-    prNote.innerHTML = `Registrer ny PR. <b>Vekt</b> og <b>reps</b> kan endres — dato lagres automatisk.<br>Forrige PR: ${formatDate(ex.lastEdited)}`;
+    prNote.innerHTML = `Registrer ny PR. <b>Navn</b>, <b>vekt</b> og <b>reps</b> kan endres — dato lagres automatisk.<br>Forrige PR: ${formatDate(ex.lastEdited)}`;
     openSheet();
     setTimeout(() => fieldWeight.focus(), 300);
   }
@@ -760,6 +1446,17 @@
     }
   });
 
+  fieldName.addEventListener('input', () => {
+    const val = fieldName.value;
+    const cap = capitalizeFirst(val);
+    if (cap !== val) {
+      const pos = fieldName.selectionStart;
+      fieldName.value = cap;
+      fieldName.setSelectionRange(pos, pos);
+    }
+    updateExerciseMatch();
+  });
+
   saveBtn.addEventListener('click', () => {
     const name = fieldName.value.trim();
     const reps = fieldReps.value.trim();
@@ -784,13 +1481,14 @@
     } else {
       const ex = exercises.find(e => e.id === editingId);
       if (ex) {
+        ex.name = name;
         ex.reps = reps;
         ex.weight = weight;
         ex.lastEdited = new Date().toISOString();
       }
     }
     render();
-    saveExercises();
+    saveExercisesToStorage();
     closeSheet();
   });
 
@@ -807,47 +1505,118 @@
   closeBtn.addEventListener('click', closeSheet);
   overlay.addEventListener('click', closeSheet);
 
-  // Sveip ned for å lukke
-  const dragHandle = document.getElementById('dragHandle');
-  let startY = 0, currentY = 0, dragging = false;
+  // Sveip ned for å lukke (generisk, brukes av begge ark)
+  function attachSwipeToClose(sheetEl, handleEl, closeFn) {
+    let startY = 0, currentY = 0, dragging = false;
 
-  function onDragStart(y) {
-    dragging = true;
-    startY = y;
-    currentY = y;
-    sheet.classList.add('dragging');
-  }
-  function onDragMove(y) {
-    if (!dragging) return;
-    currentY = y;
-    const delta = Math.max(0, currentY - startY);
-    sheet.style.transform = `translateY(${delta}px)`;
-  }
-  function onDragEnd() {
-    if (!dragging) return;
-    dragging = false;
-    sheet.classList.remove('dragging');
-    const delta = currentY - startY;
-    sheet.style.transform = '';
-    if (delta > 120) {
-      closeSheet();
+    function onDragStart(y) {
+      dragging = true;
+      startY = y;
+      currentY = y;
+      sheetEl.classList.add('dragging');
     }
+    function onDragMove(y) {
+      if (!dragging) return;
+      currentY = y;
+      const delta = Math.max(0, currentY - startY);
+      sheetEl.style.transform = `translateY(${delta}px)`;
+    }
+    function onDragEnd() {
+      if (!dragging) return;
+      dragging = false;
+      sheetEl.classList.remove('dragging');
+      const delta = currentY - startY;
+      sheetEl.style.transform = '';
+      if (delta > 120) closeFn();
+    }
+
+    handleEl.addEventListener('touchstart', (e) => onDragStart(e.touches[0].clientY), { passive: true });
+    handleEl.addEventListener('touchmove', (e) => onDragMove(e.touches[0].clientY), { passive: true });
+    handleEl.addEventListener('touchend', onDragEnd);
+
+    handleEl.addEventListener('mousedown', (e) => {
+      onDragStart(e.clientY);
+      const move = (ev) => onDragMove(ev.clientY);
+      const up = () => {
+        onDragEnd();
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', up);
+      };
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
+    });
   }
 
-  dragHandle.addEventListener('touchstart', (e) => onDragStart(e.touches[0].clientY), { passive: true });
-  dragHandle.addEventListener('touchmove', (e) => onDragMove(e.touches[0].clientY), { passive: true });
-  dragHandle.addEventListener('touchend', onDragEnd);
+  const dragHandle = document.getElementById('dragHandle');
+  attachSwipeToClose(sheet, dragHandle, closeSheet);
 
-  dragHandle.addEventListener('mousedown', (e) => {
-    onDragStart(e.clientY);
-    const move = (ev) => onDragMove(ev.clientY);
-    const up = () => {
-      onDragEnd();
-      document.removeEventListener('mousemove', move);
-      document.removeEventListener('mouseup', up);
-    };
-    document.addEventListener('mousemove', move);
-    document.addEventListener('mouseup', up);
+  // --- Velg øvelse fra liste ---
+  function renderPickerList() {
+    pickerList.innerHTML = '';
+    EXERCISE_LIBRARY.forEach(ex => {
+      const item = document.createElement('div');
+      item.className = 'picker-item';
+      item.textContent = ex.name;
+      item.addEventListener('click', () => {
+        fieldName.value = ex.name;
+        updateExerciseMatch();
+        closePicker();
+      });
+      pickerList.appendChild(item);
+    });
+  }
+
+  function openPicker() {
+    renderPickerList();
+    pickerOverlay.classList.add('show');
+    pickerSheet.classList.add('show');
+  }
+  function closePicker() {
+    pickerOverlay.classList.remove('show');
+    pickerSheet.classList.remove('show');
+  }
+
+  pickExerciseBtn.addEventListener('click', openPicker);
+  pickerCloseBtn.addEventListener('click', closePicker);
+  pickerOverlay.addEventListener('click', closePicker);
+  attachSwipeToClose(pickerSheet, pickerDragHandle, closePicker);
+
+  // --- Forklaring av øvelse ---
+  function openExplain() {
+    if (!selectedExercise) return;
+    explainTitle.textContent = selectedExercise.name;
+    explainHowTo.textContent = selectedExercise.howTo;
+    explainMuscles.textContent = selectedExercise.muscles;
+    explainOverlay.classList.add('show');
+    explainModal.classList.add('show');
+  }
+  function closeExplain() {
+    explainOverlay.classList.remove('show');
+    explainModal.classList.remove('show');
+  }
+
+  explainBtn.addEventListener('click', openExplain);
+  explainCloseBtn.addEventListener('click', closeExplain);
+  explainOverlay.addEventListener('click', closeExplain);
+
+  // --- Navigasjon til/fra muskelside ---
+  musclesNavBtn.addEventListener('click', () => {
+    musclePage.classList.add('show');
+    fab.style.display = 'none';
+    renderMusclePage();
+  });
+  backFromMuscles.addEventListener('click', () => {
+    musclePage.classList.remove('show');
+    fab.style.display = 'flex';
+  });
+
+  bodyTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      bodyTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentBodyView = tab.dataset.view;
+      renderBodyMap(currentBodyView, getCurrentWeekCounts());
+    });
   });
 
   render();
