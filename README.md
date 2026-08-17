@@ -2,6 +2,12 @@
 
 Dette er en ferdig, installerbar mini-app (PWA). Følg stegene under for å legge den ut på GitHub Pages og åpne den på telefonen.
 
+## ⚠️ Viktig: hvorfor dette er annerledes enn å bare åpne HTML-filen
+
+Om du bare laster ned `index.html` og åpner den direkte på telefonen (eller "Legg til på hjem-skjerm" fra en lokal fil), vil nettleseren ofte behandle hver nedlastede kopi som en **ny, egen adresse**. Det betyr at data du har lagt inn kan forsvinne neste gang du får en oppdatert fil.
+
+Løsningen er å laste opp disse filene til GitHub Pages **én gang**, slik at appen får en **fast nettadresse**. Da lagres dataen din trygt knyttet til den adressen, og forsvinner ikke selv om du senere oppdaterer koden (så lenge adressen forblir den samme).
+
 ## 1. Last opp til GitHub
 
 1. Gå til [github.com](https://github.com) og logg inn (opprett konto om du ikke har).

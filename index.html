@@ -3,7 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Treningsapp</title>
+<title>Momentum</title>
+<meta name="description" content="Momentum – din personlige treningslogg">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0e0f12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Momentum">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Bebas+Neue&family=Space+Grotesk:wght@600;700&family=Unbounded:wght@700;800&family=Archivo+Black&family=Sora:wght@700;800&family=Cabinet+Grotesk:wght@700&family=Monument+Extended:wght@700&display=swap" rel="stylesheet">
@@ -191,6 +200,58 @@
     font-size: 11px;
     color: #565a63;
     margin-top: 6px;
+  }
+
+  #installBanner {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    max-width: 448px;
+    margin: 0 auto;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px 14px 14px 16px;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    z-index: 40;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+  }
+  #installBanner.show { display: flex; }
+  #installText {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  #installText strong {
+    font-size: 14px;
+    font-weight: 700;
+  }
+  #installText span {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  #installBtn {
+    background: var(--accent);
+    color: #0e0f12;
+    border: none;
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  #installDismiss {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-size: 14px;
+    cursor: pointer;
+    padding: 4px;
   }
 
   #fab {
@@ -808,6 +869,15 @@
   <div id="muscleButtons"></div>
 </div>
 
+<div id="installBanner">
+  <div id="installText">
+    <strong>Installer Momentum</strong>
+    <span>Legg appen på hjemskjermen din</span>
+  </div>
+  <button id="installBtn">Installer</button>
+  <button id="installDismiss" aria-label="Lukk">✕</button>
+</div>
+
 <button id="fab" aria-label="Legg til øvelse">+</button>
 
 <div id="overlay"></div>
@@ -1237,7 +1307,27 @@
     renderBodyMap(currentBodyView, counts);
   }
 
-  let exercises = [];
+  const STORAGE_KEY = 'momentum-exercises';
+
+  function loadExercises() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      console.error('Kunne ikke lese lagrede øvelser:', e);
+      return [];
+    }
+  }
+
+  function saveExercisesToStorage() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(exercises));
+    } catch (e) {
+      console.error('Kunne ikke lagre øvelser:', e);
+    }
+  }
+
+  let exercises = loadExercises();
   let editingId = null; // null = ny øvelse, ellers redigerer eksisterende
   let currentImage = null;
   let selectedExercise = null; // matchet øvelse fra biblioteket, for forklaring
@@ -1506,6 +1596,7 @@
       }
     }
     render();
+    saveExercisesToStorage();
     closeSheet();
   });
 
@@ -1637,6 +1728,46 @@
   });
 
   render();
+
+  // --- Service worker (offline + installasjon) ---
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('service-worker.js').catch((e) => {
+        console.error('Service worker-registrering feilet:', e);
+      });
+    });
+  }
+
+  // --- "Legg til app"-banner (Chrome/Android) ---
+  const installBanner = document.getElementById('installBanner');
+  const installBtn = document.getElementById('installBtn');
+  const installDismiss = document.getElementById('installDismiss');
+  let deferredPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (!localStorage.getItem('momentum-install-dismissed')) {
+      installBanner.classList.add('show');
+    }
+  });
+
+  installBtn && installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    installBanner.classList.remove('show');
+  });
+
+  installDismiss && installDismiss.addEventListener('click', () => {
+    installBanner.classList.remove('show');
+    localStorage.setItem('momentum-install-dismissed', '1');
+  });
+
+  window.addEventListener('appinstalled', () => {
+    installBanner.classList.remove('show');
+  });
 })();
 </script>
 
