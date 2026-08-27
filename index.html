@@ -3,16 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Momentum</title>
-<meta name="description" content="Momentum – din personlige treningslogg">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0e0f12">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Momentum">
-<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Treningsapp</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Bebas+Neue&family=Space+Grotesk:wght@600;700&family=Unbounded:wght@700;800&family=Archivo+Black&family=Sora:wght@700;800&family=Cabinet+Grotesk:wght@700&family=Monument+Extended:wght@700&display=swap" rel="stylesheet">
@@ -200,58 +191,6 @@
     font-size: 11px;
     color: #565a63;
     margin-top: 6px;
-  }
-
-  #installBanner {
-    position: fixed;
-    left: 16px;
-    right: 16px;
-    bottom: 16px;
-    max-width: 448px;
-    margin: 0 auto;
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 14px 14px 14px 16px;
-    display: none;
-    align-items: center;
-    gap: 12px;
-    z-index: 40;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.45);
-  }
-  #installBanner.show { display: flex; }
-  #installText {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  #installText strong {
-    font-size: 14px;
-    font-weight: 700;
-  }
-  #installText span {
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-  #installBtn {
-    background: var(--accent);
-    color: #0e0f12;
-    border: none;
-    border-radius: 10px;
-    padding: 9px 14px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  #installDismiss {
-    background: transparent;
-    border: none;
-    color: var(--text-dim);
-    font-size: 14px;
-    cursor: pointer;
-    padding: 4px;
   }
 
   #fab {
@@ -764,6 +703,56 @@
     border-radius: 12px;
   }
 
+  .goal-setting {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .goal-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .goal-step-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .goal-step-btn:active { border-color: var(--accent); color: var(--accent); }
+  #muscleGoalInput {
+    width: 40px;
+    text-align: center;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 700;
+    padding: 5px 2px;
+    -moz-appearance: textfield;
+  }
+  #muscleGoalInput::-webkit-outer-spin-button,
+  #muscleGoalInput::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
   .muscle-section-label {
     color: var(--text-dim);
     font-size: 12px;
@@ -819,11 +808,16 @@
   }
   .muscle-minus:active { border-color: var(--accent); color: var(--accent); }
   .muscle-count {
-    min-width: 22px;
+    min-width: 32px;
     text-align: center;
     font-size: 16px;
     font-weight: 700;
     color: var(--accent);
+  }
+  .muscle-goal-suffix {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
   }
 </style>
 </head>
@@ -865,17 +859,18 @@
   </div>
   <div id="bodyMapContainer"></div>
 
+  <div class="goal-setting">
+    <span>Mål per muskel</span>
+    <div class="goal-input-wrap">
+      <button type="button" id="goalMinus" class="goal-step-btn" aria-label="Reduser mål">–</button>
+      <input type="number" id="muscleGoalInput" min="1" max="30" inputmode="numeric">
+      <button type="button" id="goalPlus" class="goal-step-btn" aria-label="Øk mål">+</button>
+    </div>
+    <span>økter/uke</span>
+  </div>
+
   <p class="muscle-section-label">Denne ukens treninger</p>
   <div id="muscleButtons"></div>
-</div>
-
-<div id="installBanner">
-  <div id="installText">
-    <strong>Installer Momentum</strong>
-    <span>Legg appen på hjemskjermen din</span>
-  </div>
-  <button id="installBtn">Installer</button>
-  <button id="installDismiss" aria-label="Lukk">✕</button>
 </div>
 
 <button id="fab" aria-label="Legg til øvelse">+</button>
@@ -1172,10 +1167,32 @@
 
   // Single red hue family: lighter red for lightly-trained muscles, deepening
   // toward a richer red the more a muscle has been trained. Always semi-transparent.
+  const MUSCLE_GOAL_KEY = 'momentum-muscle-goal';
+
+  function loadMuscleGoal() {
+    try {
+      const raw = localStorage.getItem(MUSCLE_GOAL_KEY);
+      const n = parseInt(raw, 10);
+      return (n >= 1 && n <= 30) ? n : 10;
+    } catch (e) {
+      return 10;
+    }
+  }
+
+  function saveMuscleGoal(n) {
+    try {
+      localStorage.setItem(MUSCLE_GOAL_KEY, String(n));
+    } catch (e) {
+      console.error('Kunne ikke lagre mål:', e);
+    }
+  }
+
+  let muscleGoal = loadMuscleGoal();
+
   function muscleTintColor(count) {
     if (!count) return null;
-    const capped = Math.min(count, 6);
-    const t = capped / 6;
+    const capped = Math.min(count, muscleGoal);
+    const t = capped / muscleGoal;
     const shade = Math.round(210 - 150 * t); // 210 (light) -> 60 (dark)
     const alpha = (0.22 + 0.33 * t).toFixed(2); // 0.22 -> 0.55, always transparent
     return `rgba(255,${shade},${shade},${alpha})`;
@@ -1279,7 +1296,7 @@
         <span class="muscle-name">${escapeHtml(m.name)}</span>
         <div class="muscle-controls">
           <button type="button" class="muscle-minus" aria-label="Reduser">–</button>
-          <span class="muscle-count">${count}</span>
+          <span class="muscle-count">${count}<span class="muscle-goal-suffix">/${muscleGoal}</span></span>
         </div>
       `;
       card.querySelector('.muscle-minus').addEventListener('click', (e) => {
@@ -1303,31 +1320,12 @@
     const info = getWeekInfo();
     weekLabel.textContent = `Uke ${info.week} · ${info.year}`;
     const counts = getCurrentWeekCounts();
+    if (muscleGoalInput) muscleGoalInput.value = muscleGoal;
     renderMuscleButtons(counts);
     renderBodyMap(currentBodyView, counts);
   }
 
-  const STORAGE_KEY = 'momentum-exercises';
-
-  function loadExercises() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch (e) {
-      console.error('Kunne ikke lese lagrede øvelser:', e);
-      return [];
-    }
-  }
-
-  function saveExercisesToStorage() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(exercises));
-    } catch (e) {
-      console.error('Kunne ikke lagre øvelser:', e);
-    }
-  }
-
-  let exercises = loadExercises();
+  let exercises = [];
   let editingId = null; // null = ny øvelse, ellers redigerer eksisterende
   let currentImage = null;
   let selectedExercise = null; // matchet øvelse fra biblioteket, for forklaring
@@ -1373,6 +1371,22 @@
   const bodyMapContainer = document.getElementById('bodyMapContainer');
   const muscleButtonsEl = document.getElementById('muscleButtons');
   const bodyTabs = document.querySelectorAll('.body-tab');
+  const muscleGoalInput = document.getElementById('muscleGoalInput');
+  const goalMinus = document.getElementById('goalMinus');
+  const goalPlus = document.getElementById('goalPlus');
+
+  function setMuscleGoal(n) {
+    n = Math.max(1, Math.min(30, Math.round(n) || 1));
+    muscleGoal = n;
+    saveMuscleGoal(n);
+    renderMusclePage();
+  }
+
+  muscleGoalInput.addEventListener('change', () => {
+    setMuscleGoal(parseInt(muscleGoalInput.value, 10));
+  });
+  goalMinus.addEventListener('click', () => setMuscleGoal(muscleGoal - 1));
+  goalPlus.addEventListener('click', () => setMuscleGoal(muscleGoal + 1));
 
   function formatDate(d) {
     return new Date(d).toLocaleDateString('no-NO', { day: '2-digit', month: 'short', year: 'numeric' }) +
@@ -1596,7 +1610,6 @@
       }
     }
     render();
-    saveExercisesToStorage();
     closeSheet();
   });
 
@@ -1728,46 +1741,6 @@
   });
 
   render();
-
-  // --- Service worker (offline + installasjon) ---
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('service-worker.js').catch((e) => {
-        console.error('Service worker-registrering feilet:', e);
-      });
-    });
-  }
-
-  // --- "Legg til app"-banner (Chrome/Android) ---
-  const installBanner = document.getElementById('installBanner');
-  const installBtn = document.getElementById('installBtn');
-  const installDismiss = document.getElementById('installDismiss');
-  let deferredPrompt = null;
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    if (!localStorage.getItem('momentum-install-dismissed')) {
-      installBanner.classList.add('show');
-    }
-  });
-
-  installBtn && installBtn.addEventListener('click', async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    installBanner.classList.remove('show');
-  });
-
-  installDismiss && installDismiss.addEventListener('click', () => {
-    installBanner.classList.remove('show');
-    localStorage.setItem('momentum-install-dismissed', '1');
-  });
-
-  window.addEventListener('appinstalled', () => {
-    installBanner.classList.remove('show');
-  });
 })();
 </script>
 
