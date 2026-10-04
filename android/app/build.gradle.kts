@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId = "io.github.gangstagggg.momentum"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 36
         versionCode = (System.getenv("VERSION_CODE") ?: "1").toInt()
         versionName = "1.0." + versionCode
