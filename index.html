@@ -640,7 +640,7 @@
     padding: 0 20px;
     font-size: 12.5px;
     color: var(--text-dim);
-    margin: -6px 0 12px;
+    margin: 0 0 14px;
   }
   #progressChartWrap {
     padding: 0 20px 20px;
@@ -1699,7 +1699,77 @@
     { name: "Machine Fly", category: "Chest", muscles: "Chest (especially inner chest) and front delts.", howTo: "Sit in the machine with elbows on the pads at chest height. Bring the arms together in front of the chest in an arcing motion, let them return with control." },
     { name: "Ab Wheel Rollout", category: "Abs", muscles: "Core, especially rectus abdominis, plus shoulders.", howTo: "Kneel and hold an ab wheel in front of you. Roll the wheel forward while keeping the body tight, pull back to start using the abs." },
     { name: "Dumbbell Skull Crusher", category: "Triceps", muscles: "Triceps.", howTo: "Sit or stand holding a dumbbell with both hands overhead. Lower the dumbbell behind the head by bending the elbows, press back up to straight arms." },
-    { name: "Low-to-High Cable Crossover", category: "Chest", muscles: "Upper chest and front delts.", howTo: "Stand between two cable towers with the handles low. Bring the hands upward and together in front of the torso, control the weight back to start." }
+    { name: "Low-to-High Cable Crossover", category: "Chest", muscles: "Upper chest and front delts.", howTo: "Stand between two cable towers with the handles low. Bring the hands upward and together in front of the torso, control the weight back to start." },
+    { name: "Decline Bench Press", category: "Chest", muscles: "Lower chest, front delts and triceps.", howTo: "Lie on a bench angled downward with the bar over your lower chest. Lower the bar with control to the lower chest, then press it back up until the arms are straight." },
+    { name: "Dumbbell Fly", category: "Chest", muscles: "Chest, primarily the outer and middle portion.", howTo: "Lie on a flat bench holding a dumbbell in each hand above the chest with a slight bend in the elbows. Lower the dumbbells out to the sides in an arcing motion until you feel a stretch, then bring them back together." },
+    { name: "Svend Press", category: "Chest", muscles: "Chest and front delts, with constant tension from squeezing the plates together.", howTo: "Stand holding two weight plates pressed together in front of your chest. Press the plates straight out and back, keeping them squeezed together throughout." },
+    { name: "Hack Squat", category: "Quads", muscles: "Quadriceps, with some glutes.", howTo: "Stand in the hack squat machine with shoulders and back against the pads. Bend the knees to lower the platform, then push back up through the heels." },
+    { name: "Goblet Squat", category: "Quads", muscles: "Quadriceps, glutes and core.", howTo: "Hold a dumbbell or kettlebell close to your chest with both hands. Squat down between your legs keeping the torso upright, then stand back up." },
+    { name: "Sissy Squat", category: "Quads", muscles: "Quadriceps, with heavy emphasis on the lower portion.", howTo: "Hold onto something for balance and rise onto your toes. Lean back and bend the knees while keeping hips extended, lowering until you feel a deep stretch, then rise back up." },
+    { name: "Hammer Curl", category: "Biceps", muscles: "Biceps and forearm (brachialis).", howTo: "Stand holding a dumbbell in each hand with palms facing your body. Bend the elbows and curl the dumbbells up while keeping the palms facing in, lower with control." },
+    { name: "Preacher Curl", category: "Biceps", muscles: "Biceps, especially the lower portion.", howTo: "Sit at a preacher bench with your upper arms resting on the pad, holding a bar or dumbbell. Curl the weight up toward the shoulders, lower with control without letting the arms fully lock out." },
+    { name: "Concentration Curl", category: "Biceps", muscles: "Biceps, with strict isolation.", howTo: "Sit and rest your elbow against the inside of your thigh, holding a dumbbell. Curl the dumbbell up toward the shoulder without swinging, lower with control." },
+    { name: "Cable Curl", category: "Biceps", muscles: "Biceps, with constant tension throughout the movement.", howTo: "Stand facing a low cable pulley holding the handle with an underhand grip. Curl the handle up toward the shoulders, lower with control." },
+    { name: "Incline Dumbbell Curl", category: "Biceps", muscles: "Biceps, with an emphasis on the long head from the stretched position.", howTo: "Sit back on an incline bench holding a dumbbell in each hand, arms hanging straight down. Curl the dumbbells up toward the shoulders, lower with control." },
+    { name: "EZ-Bar Curl", category: "Biceps", muscles: "Biceps and forearm, with less wrist strain than a straight bar.", howTo: "Stand holding an EZ-bar with an underhand grip on the angled part of the bar. Curl the bar up toward the chest, lower with control." },
+    { name: "Spider Curl", category: "Biceps", muscles: "Biceps, with strict isolation and peak contraction.", howTo: "Lie face-down on an incline bench with arms hanging straight down, holding a bar or dumbbells. Curl the weight up toward the shoulders, lower with control." },
+    { name: "Zottman Curl", category: "Biceps", muscles: "Biceps on the way up, forearm on the way down.", howTo: "Stand holding a dumbbell in each hand with palms facing up. Curl the dumbbells up, then rotate the palms to face down before lowering with control." },
+    { name: "T-Bar Row", category: "Back", muscles: "Mid-back and lats, plus biceps.", howTo: "Straddle a T-bar row machine or landmine bar with a handle attached, torso bent forward. Pull the handle up toward the chest while squeezing the shoulder blades together, lower with control." },
+    { name: "Close-Grip Bench Press", category: "Triceps", muscles: "Triceps, chest and front delts.", howTo: "Lie on a flat bench and grip the bar with hands shoulder-width apart or closer. Lower the bar to the lower chest keeping the elbows close to the body, press back up." },
+    { name: "Overhead Triceps Extension", category: "Triceps", muscles: "Triceps, especially the long head.", howTo: "Stand or sit holding a dumbbell with both hands overhead. Bend the elbows to lower the weight behind the head, extend back up to straight arms." },
+    { name: "Diamond Push-ups", category: "Triceps", muscles: "Triceps, chest and front delts.", howTo: "Get into a push-up position with your hands close together forming a diamond shape with the thumbs and index fingers. Lower the chest toward the hands, push back up." },
+    { name: "Bench Dips", category: "Triceps", muscles: "Triceps, front delts and chest.", howTo: "Place your hands on a bench behind you with legs extended in front. Lower your body by bending the elbows, then push back up." },
+    { name: "JM Press", category: "Triceps", muscles: "Triceps, with some chest involvement.", howTo: "Lie on a flat bench holding a bar with a shoulder-width grip. Lower the bar toward the neck/chin by bending the elbows, press back up to straight arms." },
+    { name: "Arnold Press", category: "Shoulders", muscles: "Front and side delts, plus triceps.", howTo: "Sit holding a dumbbell in each hand at shoulder height with palms facing you. Press the dumbbells overhead while rotating the palms to face forward, reverse on the way down." },
+    { name: "Front Raise", category: "Shoulders", muscles: "Front delts.", howTo: "Stand holding a dumbbell in each hand in front of your thighs. Raise the dumbbells straight out in front of you to shoulder height, lower with control." },
+    { name: "Upright Row", category: "Shoulders", muscles: "Side delts and traps.", howTo: "Stand holding a bar or dumbbells in front of your thighs. Pull the weight straight up toward your chin, leading with the elbows, lower with control." },
+    { name: "Reverse Fly", category: "Shoulders", muscles: "Rear delts and upper back.", howTo: "Bend the torso forward holding a dumbbell in each hand, arms hanging down. Raise the arms out to the sides, squeezing the shoulder blades together, lower with control." },
+    { name: "Cable Lateral Raise", category: "Shoulders", muscles: "Side delts, with constant tension.", howTo: "Stand beside a low cable pulley and grip the handle with the far hand across your body. Raise the arm out to the side until roughly shoulder height, lower with control." },
+    { name: "Romanian Deadlift", category: "Hamstrings", muscles: "Hamstrings and glutes, plus lower back.", howTo: "Hold a bar in front of your thighs with a slight bend in the knees. Hinge at the hips to lower the bar along your legs until you feel a stretch in the hamstrings, stand back up." },
+    { name: "Nordic Hamstring Curl", category: "Hamstrings", muscles: "Hamstrings, with heavy eccentric emphasis.", howTo: "Kneel with your ankles anchored and torso upright. Lower your body forward as slowly as possible using your hamstrings, catch yourself with your hands and push back up." },
+    { name: "Glute-Ham Raise", category: "Hamstrings", muscles: "Hamstrings and glutes.", howTo: "Position yourself in a glute-ham developer with ankles secured. Lower your torso forward with control, then curl back up using the hamstrings." },
+    { name: "Single-Leg Deadlift", category: "Hamstrings", muscles: "Hamstrings and glutes, plus balance.", howTo: "Stand on one leg holding a dumbbell in the opposite hand. Hinge forward at the hip while extending the free leg behind you, then return to standing." },
+    { name: "Cable Pull-Through", category: "Hamstrings", muscles: "Hamstrings and glutes.", howTo: "Stand facing away from a low cable with the rope between your legs. Hinge forward at the hips, then drive them forward to stand up, squeezing the glutes." },
+    { name: "Lying Leg Curl", category: "Hamstrings", muscles: "Hamstrings.", howTo: "Lie face-down in the machine with the pad over your ankles. Curl the pad up toward your glutes, lower with control." },
+    { name: "Kettlebell Deadlift", category: "Hamstrings", muscles: "Hamstrings, glutes and lower back.", howTo: "Stand over a kettlebell with feet hip-width apart. Hinge down to grip the handle with a flat back, stand up by extending the hips." },
+    { name: "Glute Bridge", category: "Glutes", muscles: "Glutes and hamstrings.", howTo: "Lie on your back with knees bent and feet flat on the floor. Press through your heels to lift your hips up, squeeze the glutes at the top, lower with control." },
+    { name: "Cable Kickback", category: "Glutes", muscles: "Glutes.", howTo: "Attach an ankle cuff to a low cable and face the machine. Kick the leg straight back and up, squeezing the glute, return with control." },
+    { name: "Sumo Deadlift", category: "Glutes", muscles: "Glutes, inner thighs and hamstrings.", howTo: "Stand with a wide stance and toes pointed out, gripping the bar inside your knees. Lift the bar by extending the hips and knees until standing upright." },
+    { name: "Curtsy Lunge", category: "Glutes", muscles: "Glutes, especially the outer hip.", howTo: "Stand upright and step one leg diagonally behind the other into a crossing lunge. Bend both knees to lower down, push back up to standing." },
+    { name: "Banded Lateral Walk", category: "Glutes", muscles: "Glutes, especially the side (medius).", howTo: "Place a resistance band around your legs above the knees or ankles. Take small steps sideways while keeping tension on the band." },
+    { name: "Single-Leg Hip Thrust", category: "Glutes", muscles: "Glutes and hamstrings, one side at a time.", howTo: "Lean your upper back against a bench with one foot on the floor and the other leg extended. Press your hips up using the working leg, lower with control." },
+    { name: "Frog Pump", category: "Glutes", muscles: "Glutes, with a short, isolated range of motion.", howTo: "Lie on your back with the soles of your feet together and knees dropped open. Press your hips up by squeezing the glutes, lower with control." },
+    { name: "Donkey Kick", category: "Glutes", muscles: "Glutes.", howTo: "Get on all fours with hands under shoulders and knees under hips. Kick one leg back and up keeping the knee bent, squeeze the glute, lower with control." },
+    { name: "Hanging Leg Raise", category: "Abs", muscles: "Lower abs and hip flexors.", howTo: "Hang from a pull-up bar with arms straight. Raise your legs up toward your chest by flexing the abs, lower with control." },
+    { name: "Mountain Climbers", category: "Abs", muscles: "Core, with a cardio component.", howTo: "Start in a plank position. Quickly alternate driving your knees toward your chest, keeping the core tight throughout." },
+    { name: "Bicycle Crunch", category: "Abs", muscles: "Rectus abdominis and obliques.", howTo: "Lie on your back with hands behind your head and knees bent. Alternate bringing opposite elbow to opposite knee in a pedaling motion." },
+    { name: "Cable Crunch", category: "Abs", muscles: "Rectus abdominis, with added resistance.", howTo: "Kneel in front of a high cable holding the rope by your head. Crunch down by flexing the abs, bringing your elbows toward your knees, return with control." },
+    { name: "V-Ups", category: "Abs", muscles: "Rectus abdominis and hip flexors.", howTo: "Lie flat on your back with arms extended overhead. Simultaneously raise your legs and torso to form a V shape, reaching your hands toward your feet, lower with control." },
+    { name: "Dead Bug", category: "Abs", muscles: "Core, with an emphasis on stability.", howTo: "Lie on your back with arms extended toward the ceiling and knees bent at 90 degrees. Slowly extend one arm overhead and the opposite leg out straight, return and switch sides." },
+    { name: "Donkey Calf Raise", category: "Calves", muscles: "Calves, with a deep stretch at the bottom.", howTo: "Bend forward at the hips resting your upper body on a pad, with a weight placed on your hips. Raise your heels as high as possible, lower with control." },
+    { name: "Leg Press Calf Raise", category: "Calves", muscles: "Calves.", howTo: "Sit in the leg press machine with only the balls of your feet on the platform. Press through the balls of your feet to extend the ankles, lower with control." },
+    { name: "Jump Rope", category: "Calves", muscles: "Calves, with a cardio component.", howTo: "Hold the rope handles and swing it under your feet, jumping just high enough to clear it. Keep a steady rhythm using mostly the ankles." },
+    { name: "Single-Leg Calf Raise", category: "Calves", muscles: "Calves, one leg at a time.", howTo: "Stand on one leg on the edge of a step, holding onto something for balance. Raise the heel as high as possible, lower with control below the step level." },
+    { name: "Seated Dumbbell Calf Raise", category: "Calves", muscles: "Calves (soleus), performed with dumbbells on the knees.", howTo: "Sit with a dumbbell resting on each knee and the balls of your feet on a raised surface. Raise your heels as high as possible, lower with control." },
+    { name: "Smith Machine Calf Raise", category: "Calves", muscles: "Calves.", howTo: "Stand under a Smith machine bar with the balls of your feet on a block. Raise your heels as high as possible, lower with control." },
+    { name: "Farmer's Walk on Toes", category: "Calves", muscles: "Calves, plus grip and core.", howTo: "Hold a heavy dumbbell or kettlebell in each hand and rise onto your toes. Walk forward while staying on your toes the entire time." },
+    { name: "Eccentric Calf Raise", category: "Calves", muscles: "Calves, with emphasis on the lowering phase.", howTo: "Rise onto your toes using both legs, then shift to one leg. Lower yourself down as slowly as possible on the single leg." },
+    { name: "Bird Dog", category: "Lower Back", muscles: "Lower back and core, plus balance.", howTo: "Get on all fours with hands under shoulders and knees under hips. Extend one arm forward and the opposite leg back, hold briefly, then switch sides." },
+    { name: "Reverse Hyperextension", category: "Lower Back", muscles: "Lower back and glutes.", howTo: "Lie face-down on a reverse hyper machine or bench with your hips at the edge. Lower your legs down, then raise them back up in line with your torso." },
+    { name: "Suitcase Deadlift", category: "Lower Back", muscles: "Lower back and core, with an anti-lateral-flexion challenge.", howTo: "Stand beside a dumbbell or kettlebell on the floor. Hinge down and pick it up with one hand, standing up tall without leaning to the side." },
+    { name: "Renegade Row", category: "Lower Back", muscles: "Lower back and core, plus lats.", howTo: "Get into a push-up position holding two dumbbells. Row one dumbbell up toward your hip while balancing on the other arm, alternate sides." },
+    { name: "Pallof Press", category: "Lower Back", muscles: "Core and lower back, an anti-rotation exercise.", howTo: "Stand sideways to a cable or band at chest height. Press the handle straight out in front of you and hold, resisting the pull to rotate." },
+    { name: "Seated Good Morning", category: "Lower Back", muscles: "Lower back and glutes.", howTo: "Sit on a bench with a bar across your upper back. Hinge forward at the hips keeping the back straight, then sit back up." },
+    { name: "Banded Good Morning", category: "Lower Back", muscles: "Lower back, glutes and hamstrings.", howTo: "Stand on a resistance band with it looped around your upper back. Hinge forward at the hips, then stand back up." },
+    { name: "Weighted Back Extension", category: "Lower Back", muscles: "Lower back and glutes, with added resistance.", howTo: "Position yourself in a back extension bench holding a weight plate to your chest. Lower your torso forward with control, extend back up." },
+    { name: "Thruster", category: "Full Body", muscles: "Legs, shoulders and core.", howTo: "Hold a barbell or dumbbells at shoulder height and squat down. Drive up out of the squat and press the weight overhead in one fluid motion." },
+    { name: "Burpee", category: "Full Body", muscles: "Full body, with a strong cardio component.", howTo: "From standing, drop into a squat and kick your feet back into a plank. Do a push-up, jump your feet back in, then explode up into a jump." },
+    { name: "Turkish Get-Up", category: "Full Body", muscles: "Full body, especially shoulders and core stability.", howTo: "Lie on your back holding a weight straight up over one shoulder. Work your way up to standing while keeping the weight locked out overhead, then reverse back down." },
+    { name: "Man Maker", category: "Full Body", muscles: "Full body: back, shoulders, legs and core.", howTo: "Start in a push-up position holding dumbbells. Row each dumbbell, perform a push-up, jump your feet in, then stand up and press the dumbbells overhead." },
+    { name: "Power Clean", category: "Full Body", muscles: "Full body, especially legs, hips and traps.", howTo: "Lift the bar from the floor explosively, pulling it up to shoulder height and dropping under it into a partial squat to catch it." },
+    { name: "Push Press", category: "Full Body", muscles: "Shoulders and triceps, powered by the legs.", howTo: "Hold a bar at shoulder height and dip slightly at the knees. Drive up through the legs and press the bar overhead in one motion." },
+    { name: "Farmer's Carry", category: "Full Body", muscles: "Grip, core, traps and legs.", howTo: "Hold a heavy dumbbell or kettlebell in each hand at your sides. Walk forward for a set distance while keeping the torso upright." },
+    { name: "Wall Ball Shot", category: "Full Body", muscles: "Legs, shoulders and core.", howTo: "Hold a medicine ball at your chest and squat down. Stand up explosively and throw the ball up against a wall target, catch it and repeat." },
   ];
   EXERCISE_LIBRARY.sort((a, b) => a.name.localeCompare(b.name, 'en'));
 
@@ -2500,35 +2570,49 @@
   progressOverlay.addEventListener('click', closeProgress);
 
   function drawProgressChart(history) {
+    // Two lines on separate scales, since weight and reps often trade off against
+    // each other (more reps at the same weight, or more weight at fewer reps).
     const weights = history.map(h => parseFloat(h.weight) || 0);
-    const minW = Math.min(...weights);
-    const maxW = Math.max(...weights);
-    const range = maxW - minW || 1;
-    const W = 380, H = 180, padL = 34, padR = 10, padT = 14, padB = 24;
+    const reps = history.map(h => parseFloat(h.reps) || 0);
+
+    const minW = Math.min(...weights), maxW = Math.max(...weights);
+    const rangeW = (maxW - minW) || 1;
+    const minR = Math.min(...reps), maxR = Math.max(...reps);
+    const rangeR = (maxR - minR) || 1;
+
+    const W = 380, H = 190, padL = 34, padR = 34, padT = 14, padB = 26;
     const plotW = W - padL - padR;
     const plotH = H - padT - padB;
 
-    const pts = weights.map((w, i) => {
-      const x = padL + (weights.length === 1 ? plotW / 2 : (i / (weights.length - 1)) * plotW);
-      const y = padT + plotH - ((w - minW) / range) * plotH;
-      return [x, y];
-    });
+    const xFor = (i) => padL + (history.length === 1 ? plotW / 2 : (i / (history.length - 1)) * plotW);
+    const weightPts = weights.map((w, i) => [xFor(i), padT + plotH - ((w - minW) / rangeW) * plotH]);
+    const repPts = reps.map((r, i) => [xFor(i), padT + plotH - ((r - minR) / rangeR) * plotH]);
 
-    const linePath = pts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
-    const areaPath = linePath + ` L${pts[pts.length - 1][0].toFixed(1)},${(padT + plotH).toFixed(1)} L${pts[0][0].toFixed(1)},${(padT + plotH).toFixed(1)} Z`;
+    const weightColor = 'var(--accent)';
+    const repColor = '#ff8a5b';
 
-    const dots = pts.map((p) => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.5" fill="var(--accent)" />`).join('');
-    const yTop = `<text x="${padL - 6}" y="${padT + 4}" text-anchor="end" font-size="10" fill="var(--text-dim)">${Math.round(maxW)}</text>`;
-    const yBot = `<text x="${padL - 6}" y="${padT + plotH}" text-anchor="end" font-size="10" fill="var(--text-dim)">${Math.round(minW)}</text>`;
-    const xFirst = `<text x="${pts[0][0].toFixed(1)}" y="${H - 6}" text-anchor="start" font-size="10" fill="var(--text-dim)">${formatShortDate(history[0].date)}</text>`;
-    const xLast = `<text x="${pts[pts.length - 1][0].toFixed(1)}" y="${H - 6}" text-anchor="end" font-size="10" fill="var(--text-dim)">${formatShortDate(history[history.length - 1].date)}</text>`;
+    const pathFor = (pts) => pts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+    const weightLine = `<path d="${pathFor(weightPts)}" fill="none" stroke="${weightColor}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />`;
+    const repLine = `<path d="${pathFor(repPts)}" fill="none" stroke="${repColor}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="5,4" />`;
+    const weightDots = weightPts.map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.2" fill="${weightColor}" />`).join('');
+    const repDots = repPts.map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.2" fill="${repColor}" />`).join('');
+
+    const wTop = `<text x="${padL - 6}" y="${padT + 4}" text-anchor="end" font-size="10" fill="${weightColor}">${Math.round(maxW)}</text>`;
+    const wBot = `<text x="${padL - 6}" y="${padT + plotH}" text-anchor="end" font-size="10" fill="${weightColor}">${Math.round(minW)}</text>`;
+    const rTop = `<text x="${W - padR + 6}" y="${padT + 4}" text-anchor="start" font-size="10" fill="${repColor}">${Math.round(maxR)}</text>`;
+    const rBot = `<text x="${W - padR + 6}" y="${padT + plotH}" text-anchor="start" font-size="10" fill="${repColor}">${Math.round(minR)}</text>`;
+
+    const xFirst = `<text x="${padL}" y="${H - 6}" text-anchor="start" font-size="10" fill="var(--text-dim)">${formatShortDate(history[0].date)}</text>`;
+    const xLast = `<text x="${W - padR}" y="${H - 6}" text-anchor="end" font-size="10" fill="var(--text-dim)">${formatShortDate(history[history.length - 1].date)}</text>`;
 
     progressChartWrap.innerHTML = `
+      <div class="chart-legend">
+        <span class="legend-dot" style="background:${weightColor}"></span> Weight (kg)
+        <span class="legend-dot" style="background:${repColor}; margin-left:14px;"></span> Reps
+      </div>
       <svg viewBox="0 0 ${W} ${H}" style="width:100%; height:auto; display:block;">
-        <path d="${areaPath}" fill="var(--accent)" opacity="0.12" />
-        <path d="${linePath}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
-        ${dots}
-        ${yTop}${yBot}${xFirst}${xLast}
+        ${weightLine}${repLine}${weightDots}${repDots}
+        ${wTop}${wBot}${rTop}${rBot}${xFirst}${xLast}
       </svg>
     `;
   }
