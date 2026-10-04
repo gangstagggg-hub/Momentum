@@ -14,6 +14,15 @@
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Momentum</title>
+<meta name="description" content="Momentum – your personal workout log">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0e0f12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Momentum">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Bebas+Neue&family=Space+Grotesk:wght@600;700&family=Unbounded:wght@700;800&family=Archivo+Black&family=Sora:wght@700;800&family=Cabinet+Grotesk:wght@700&family=Monument+Extended:wght@700&display=swap" rel="stylesheet">
@@ -223,6 +232,22 @@
     color: #565a63;
     margin-top: 6px;
   }
+
+  #installBanner {
+    position: fixed; left: 16px; right: 16px; bottom: 16px; max-width: 448px; margin: 0 auto;
+    background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 16px;
+    padding: 14px 14px 14px 16px; display: none; align-items: center; gap: 12px; z-index: 40;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+  }
+  #installBanner.show { display: flex; }
+  #installText { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  #installText strong { font-size: 14px; font-weight: 700; }
+  #installText span { font-size: 12px; color: var(--text-dim); }
+  #installBtn {
+    background: var(--accent); color: #0e0f12; border: none; border-radius: 10px;
+    padding: 9px 14px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap;
+  }
+  #installDismiss { background: transparent; border: none; color: var(--text-dim); font-size: 14px; cursor: pointer; padding: 4px; }
 
   #fab {
     position: fixed;
@@ -1364,6 +1389,7 @@
         </div>
       </div>
       <div class="nav-btn-group">
+        <button id="installNavBtn" class="nav-text-btn" aria-label="Install app" style="display:none;">Install</button>
         <button class="nav-text-btn theme-toggle-btn" aria-label="Toggle theme">Dark</button>
         <button class="nav-text-btn nav-page-btn" data-page="timer" aria-label="Rest Timer">Timer</button>
         <button class="nav-text-btn nav-page-btn" data-page="programs" aria-label="Workout Programs">Programs</button>
@@ -1525,6 +1551,15 @@
     <div class="error-text" id="programEditError"></div>
     <button type="button" id="saveProgramBtn" class="save-btn">Save Program</button>
   </div>
+</div>
+
+<div id="installBanner">
+  <div id="installText">
+    <strong>Install Momentum</strong>
+    <span>Add the app to your home screen</span>
+  </div>
+  <button id="installBtn">Install</button>
+  <button id="installDismiss" aria-label="Close">✕</button>
 </div>
 
 <button id="fab" aria-label="Add exercise">+</button>
@@ -1842,7 +1877,7 @@
       const raw = localStorage.getItem(MUSCLE_STORAGE_KEY);
       return raw ? JSON.parse(raw) : {};
     } catch (e) {
-      console.error('Kunne ikke lese muskeldata:', e);
+      console.error('Could not read muscle data:', e);
       return {};
     }
   }
@@ -1851,7 +1886,7 @@
     try {
       localStorage.setItem(MUSCLE_STORAGE_KEY, JSON.stringify(muscleWeeks));
     } catch (e) {
-      console.error('Kunne ikke lagre muskeldata:', e);
+      console.error('Could not save muscle data:', e);
     }
   }
 
@@ -2125,7 +2160,7 @@
 
   function renderMusclePage() {
     const info = getWeekInfo();
-    weekLabel.textContent = `Uke ${info.week} · ${info.year}`;
+    weekLabel.textContent = `Week ${info.week} · ${info.year}`;
     const counts = getCurrentWeekCounts();
     renderMuscleButtons(counts);
     renderBodyMap(currentBodyView, counts);
@@ -2165,7 +2200,7 @@
       localStorage.setItem(LAST_TRAINED_KEY, dateStr);
       renderLastTrainedLabels();
     } catch (e) {
-      console.error('Kunne ikke lagre siste treningsdag:', e);
+      console.error('Could not save last workout day:', e);
     }
   }
 
@@ -2289,8 +2324,8 @@
   const bodyTabs = document.querySelectorAll('.body-tab');
 
   function formatDate(d) {
-    return new Date(d).toLocaleDateString('no-NO', { day: '2-digit', month: 'short', year: 'numeric' }) +
-      ' ' + new Date(d).toLocaleTimeString('no-NO', { hour: '2-digit', minute: '2-digit' });
+    return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) +
+      ' ' + new Date(d).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   }
 
   function capitalizeFirst(str) {
@@ -2555,7 +2590,7 @@
     } else {
       progressEmptyState.style.display = 'none';
       progressChartWrap.style.display = 'block';
-      progressSub.textContent = `${history.length} entries · weight (kg) over time`;
+      progressSub.textContent = `${history.length} entries · weight and reps over time`;
       drawProgressChart(history);
     }
     progressOverlay.classList.add('show');
@@ -3385,6 +3420,52 @@
 
   render();
   renderLastTrainedLabels();
+
+  // --- Service worker (offline + installation) ---
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('service-worker.js').catch((e) => {
+        console.error('Service worker registration failed:', e);
+      });
+    });
+  }
+
+  // --- "Add app" banner + nav button (Chrome/Android) ---
+  const installNavBtn = document.getElementById('installNavBtn');
+  const installBanner = document.getElementById('installBanner');
+  const installBtn = document.getElementById('installBtn');
+  const installDismiss = document.getElementById('installDismiss');
+  let deferredPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    deferredPrompt = e;
+    installNavBtn.style.display = 'flex';
+    if (!localStorage.getItem('momentum-install-dismissed')) {
+      e.preventDefault();
+      installBanner.classList.add('show');
+    }
+  });
+
+  async function triggerInstall() {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    installNavBtn.style.display = 'none';
+    installBanner.classList.remove('show');
+  }
+  installNavBtn.addEventListener('click', triggerInstall);
+  installBtn && installBtn.addEventListener('click', triggerInstall);
+
+  installDismiss && installDismiss.addEventListener('click', () => {
+    installBanner.classList.remove('show');
+    localStorage.setItem('momentum-install-dismissed', '1');
+  });
+
+  window.addEventListener('appinstalled', () => {
+    installBanner.classList.remove('show');
+    installNavBtn.style.display = 'none';
+  });
 })();
 
 </script>
