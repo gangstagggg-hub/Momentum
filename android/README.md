@@ -1,134 +1,56 @@
-# Momentum — Android (TWA, uten PWABuilder)
+# Momentum – Android (WebView, dataene ligger i appens egen mappe)
 
-Dette er et ekte, minimalt Android-prosjekt som bruker Googles eget
-`androidbrowserhelper`-bibliotek (samme bibliotek PWABuilder/Bubblewrap bruker
-under panseret) — men skrevet for hånd med riktig API-nivå (36) fra start,
-siden PWABuilder sitt eget verktøy er fastlåst på API 35.
+Dette er Android-appen for Momentum. Nettsiden (`index.html` i roten av repoet) pakkes
+**inn i selve appen** når den bygges, og vises i en WebView.
 
-Appen viser Momentum (`https://gangstagggg-hub.github.io/momentum-app/`) i
-fullskjerm, uten adressefelt — så lenge `assetlinks.json`-steget nedenfor
-gjøres riktig.
+## Hva som er annerledes enn før
 
-## 1. Omorganisering før du laster opp til GitHub
+| | Før (TWA) | Nå (WebView) |
+|---|---|---|
+| Hvor dataene ligger | I Chromes lagring | I **appens egen private mappe** |
+| Påvirkes av å tømme Chrome | Ja | **Nei** |
+| Fjernes når | Chrome-data tømmes | Appen avinstalleres eller lagringen tømmes i Android-innstillinger |
+| Adresselinje øverst | Ja, til `assetlinks.json` er riktig | **Aldri** (trenger ikke `assetlinks.json`) |
+| Virker uten nett | Etter første besøk | **Alltid** (alt ligger i appen, også skrifttypene) |
+| Nye endringer i nettsiden | Vises automatisk | Krever ny bygging og ny utgave i Play |
 
-Alt i denne zip-filen (`app/`, `.gitignore`, `build.gradle.kts`,
-`gradle.properties`, `README.md`, `settings.gradle.kts`) skal ligge i en mappe
-kalt **`android`** i repoet ditt — bortsett fra **`.github`**, som skal ligge
-helt i roten av repoet (ved siden av `android`-mappen, ikke inni den), slik at
-GitHub Actions faktisk finner arbeidsflyten.
+Android sin automatiske sikkerhetskopi til Google er slått **av** for denne appen
+(`allowBackup="false"`), så treningsdataene blir bare på telefonen.
 
-Endelig struktur i repoet:
-```
-ditt-repo/
-├── .github/
-│   └── workflows/
-│       └── android.yml
-├── android/
-│   ├── app/
-│   ├── .gitignore
-│   ├── build.gradle.kts
-│   ├── gradle.properties
-│   ├── README.md
-│   └── settings.gradle.kts
-└── (resten av Momentum-nettsiden din)
-```
+## Slik tar du den i bruk (første gang)
 
-## 2. Lag en signeringsnøkkel (keystore)
+1. **Last opp `android`-mappen** til repoet (Add file → Upload files, dra hele mappen).
+   Filene med samme navn blir erstattet.
+2. **Bytt ut arbeidsflyten:** åpne `.github/workflows/android.yml` på GitHub, trykk
+   blyant-ikonet, erstatt hele innholdet med filen i denne pakken, og trykk Commit changes.
+3. Sørg for at **`index.html` i roten av repoet er den nyeste** (fra `momentum-app.zip`).
+   Arbeidsflyten kopierer akkurat denne filen inn i appen.
+4. **Actions → Android Build → Run workflow.** Vent på grønn hake og last ned `.aab`-filen
+   under *Artifacts*.
+5. **Play Console → Intern testing → Opprett ny utgave**, last opp den nye `.aab`-filen
+   og fullfør med *Start utrulling*.
+6. Oppdater Momentum fra Play på telefonen. Appen starter **tom** første gang, fordi den
+   har sin egen lagring og ikke kan hente data fra Chrome.
 
-Du trenger en **egen, ny** nøkkel for Momentum — ikke samme fil som Wage
-Counter. På din egen PC (krever Java/JDK installert, eller bruk Android
-Studios innebygde `keytool`):
+## Når du endrer nettsiden senere
 
-```
-keytool -genkeypair -v -keystore momentum-upload.jks -alias momentum -keyalg RSA -keysize 2048 -validity 10000
-```
+Last opp ny `index.html` til repoet som vanlig. Det starter en ny bygging automatisk.
+Last deretter ned den nye `.aab`-filen og legg den ut som en ny utgave i Play Console.
 
-Ta vare på **passordet** og **alias** du velger — du trenger dem i steg 3.
-Denne filen skal aldri lastes opp til GitHub.
+## Hvis noe ikke fungerer
 
-## 3. Legg til GitHub Secrets
-
-I repoet: **Settings → Secrets and variables → Actions → New repository
-secret**. Legg til disse fire:
-
-| Navn | Verdi |
-|---|---|
-| `UPLOAD_KEYSTORE_BASE64` | Base64-kodet innhold av `momentum-upload.jks` |
-| `UPLOAD_KEYSTORE_PASSWORD` | Passordet du valgte i steg 2 |
-| `UPLOAD_KEY_ALIAS` | Alias du valgte i steg 2 (f.eks. `momentum`) |
-| `UPLOAD_KEY_PASSWORD` | Nøkkelpassordet (ofte samme som keystore-passordet) |
-
-For å base64-kode filen i PowerShell:
-```powershell
-[Convert]::ToBase64String([IO.File]::ReadAllBytes("momentum-upload.jks")) | Set-Clipboard
-```
-Lim så inn direkte i secret-verdien.
-
-## 4. Kjør arbeidsflyten
-
-**Actions**-fanen → **"Android Build"** → **"Run workflow"**. Når den er
-ferdig, last ned `.aab`-filen fra **Artifacts**.
-
-## 5. assetlinks.json — den vanligste fallgruven
-
-For at appen skal åpnes i **fullskjerm uten adressefelt**, må Google kunne
-bekrefte at du eier både appen og nettsiden. Dette krever en fil på:
-
-```
-https://gangstagggg-hub.github.io/.well-known/assetlinks.json
-```
-
-**Viktig:** dette er **domenets rot** (`gangstagggg-hub.github.io`), ikke
-`.../momentum-app/.well-known/...`. Dette løste vi for Wage Counter ved å
-opprette et eget repo kalt nøyaktig `gangstagggg-hub.github.io` som GitHub
-Pages serverer fra roten.
-
-**Hvis det repoet allerede finnes** (fra Wage Counter), skal du **ikke**
-overskrive filen — `assetlinks.json` er en liste som kan inneholde flere
-apper. Åpne den eksisterende filen og **legg til et nytt objekt** i arrayet:
-
-```json
-{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "io.github.gangstagggg.momentum",
-    "sha256_cert_fingerprints": ["SHA-256-FINGERPRINTET_DITT_HER"]
-  }
-}
-```
-
-### Hvor du finner riktig fingerprint
-
-Etter at du har lastet opp `.aab`-filen til Play Console minst én gang:
-**Play Console → ditt Momentum-prosjekt → Setup → App integrity → App
-signing** → kopier **SHA-256**-verdien under **"App signing key
-certificate"**.
-
-To ting folk (inkludert oss, under Wage Counter) går i fella på:
-- Det skal være **App signing key**-fingerprintet, **ikke** "Upload key
-  certificate"
-- Det skal være **SHA-256**, **ikke** SHA-1
-
-## 6. Kjente, ufarlige ting du vil se
-
-- Første gang appen åpnes, viser Chrome en **engangs-melding** om at siden
-  "kjører i Chrome". Dette er standard, obligatorisk oppførsel for Trusted
-  Web Activities og kan ikke fjernes — det vises kun én gang per installasjon.
-- Versjonsnummeret (`versionCode`) settes automatisk av GitHub Actions sitt
-  kjøringsnummer — det økes av seg selv ved hver kjøring, du trenger ikke
-  justere det manuelt i `build.gradle.kts`.
-
-## 7. Hvis appen krasjer på telefonen
-
-Bruk ADB for å se den faktiske feilmeldingen i stedet for å gjette:
+Koble telefonen til PC med USB (USB-feilsøking på) og kjør:
 
 ```powershell
-adb logcat | Select-String "momentum|FATAL EXCEPTION|AndroidRuntime"
+adb logcat | Select-String "momentum|FATAL EXCEPTION|AndroidRuntime|chromium"
 ```
 
-Koble telefonen til PC-en med USB, slå på **USB-feilsøking** i
-utviklerinnstillinger, installer appen, og se etter stack-trace i terminalen
-i det øyeblikket den krasjer. Dette var den eneste metoden som ga et 100 %
-sikkert svar under feilsøkingen av Wage Counter — gjetting fra kildekode
-alene førte oss på to blindspor først.
+## Teknisk
+
+- Pakke-ID: `io.github.gangstagggg.momentum` (samme som før, så dette er en vanlig oppdatering)
+- `minSdk 24`, `targetSdk 36`
+- Nettsiden serveres fra `https://appassets.androidplatform.net/assets/www/` via
+  `WebViewAssetLoader`, så `localStorage` virker og ingenting hentes fra internett
+- Skrifttypen Syne (åpen lisens, SIL OFL) ligger i `tools/fonts`
+- Tilbake-knappen lukker først åpne vinduer og går ett steg opp, og avslutter appen først
+  når du står på startsiden

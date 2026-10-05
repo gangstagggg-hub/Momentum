@@ -11,7 +11,7 @@ android {
         minSdk = 24
         targetSdk = 36
         versionCode = (System.getenv("VERSION_CODE") ?: "1").toInt()
-        versionName = "1.0." + versionCode
+        versionName = "2.0." + versionCode
     }
 
     signingConfigs {
@@ -40,15 +40,11 @@ android {
 }
 
 dependencies {
-    implementation("com.google.androidbrowserhelper:androidbrowserhelper:2.7.3")
-
-    // Pinned explicitly to match the exact versions androidbrowserhelper 2.7.3
-    // itself is built and tested against (confirmed from its own version
-    // catalog). LauncherActivity calls WindowCompat.enableEdgeToEdge() as the
-    // very first line of onCreate() — if an older/mismatched androidx.core
-    // gets resolved transitively instead, the app crashes immediately on
-    // launch. Pinning removes any ambiguity in dependency resolution.
+    // Serves the web app that is bundled inside the APK to the WebView, over a
+    // secure https address, so localStorage works and nothing is loaded from the internet
+    implementation("androidx.webkit:webkit:1.12.1")
+    // Window insets (edge-to-edge) and FileProvider (camera photos)
     implementation("androidx.core:core:1.17.0")
-    implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("androidx.browser:browser:1.10.0")
+    // Back button handling that works on both older and newer Android versions
+    implementation("androidx.activity:activity:1.10.1")
 }

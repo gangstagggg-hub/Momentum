@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="appName">Momentum</string>
-       <string name="launchUrl">https://gangstagggg-hub.github.io/Momentum/</string>
-    <string name="hostName">gangstagggg-hub.github.io</string>
 </resources>

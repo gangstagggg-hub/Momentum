@@ -1,80 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Needed for the WebView itself. The app does not send any of your data anywhere. -->
     <uses-permission android:name="android.permission.INTERNET" />
-
-    <!-- Package visibility (Android 11+): lets the app see which browsers
-         support Trusted Web Activities. Without this, androidbrowserhelper
-         can't find a browser to host the TWA in and crashes instead of
-         falling back gracefully. -->
-    <queries>
-        <intent>
-            <action android:name="android.support.customtabs.action.CustomTabsService" />
-        </intent>
-    </queries>
+    <!-- Lets the rest timer vibrate when time is up -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/appName"
-        android:manageSpaceActivity="com.google.androidbrowserhelper.trusted.ManageDataLauncherActivity"
-        android:theme="@style/LauncherActivityTheme">
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="false">
 
         <activity
-            android:name="com.google.androidbrowserhelper.trusted.LauncherActivity"
-            android:label="@string/appName"
+            android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/LauncherActivityTheme">
-
-            <meta-data
-                android:name="android.support.customtabs.trusted.DEFAULT_URL"
-                android:value="@string/launchUrl" />
-
-            <meta-data
-                android:name="android.support.customtabs.trusted.STATUS_BAR_COLOR"
-                android:resource="@color/colorPrimary" />
-
-            <meta-data
-                android:name="android.support.customtabs.trusted.NAVIGATION_BAR_COLOR"
-                android:resource="@color/colorPrimaryDark" />
-
-            <meta-data
-                android:name="android.support.customtabs.trusted.FILE_PROVIDER_AUTHORITY"
-                android:value="${applicationId}.fileprovider" />
-
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|uiMode|density|fontScale|layoutDirection">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="https"
-                    android:host="@string/hostName" />
-            </intent-filter>
         </activity>
 
-        <!-- Required by LauncherActivity.launchTwa() on every launch — omitting
-             this causes an immediate crash (IllegalArgumentException), confirmed
-             via ADB logcat during Wage Counter's build. -->
-        <activity android:name="com.google.androidbrowserhelper.trusted.ManageDataLauncherActivity">
-            <meta-data
-                android:name="android.support.customtabs.trusted.MANAGE_SPACE_URL"
-                android:value="@string/launchUrl" />
-        </activity>
-
-        <activity android:name="com.google.androidbrowserhelper.trusted.FocusActivity" android:exported="false" />
-
-        <activity
-            android:name="com.google.androidbrowserhelper.trusted.WebViewFallbackActivity"
-            android:theme="@style/LauncherActivityTheme"
-            android:exported="true" />
-
+        <!-- Lets the system camera app save a photo that the web app can then pick up -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -84,22 +36,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepaths" />
         </provider>
-
-        <service
-            android:name="com.google.androidbrowserhelper.trusted.DelegationService"
-            android:exported="true"
-            tools:ignore="ExportedService">
-            <!-- Android recommends exported Services declare a permission so the
-                 system can restrict access. TrustedWebActivityService does its
-                 own access control, so this warning is safe to ignore (same as
-                 Google's own reference project). -->
-            <intent-filter>
-                <action android:name="android.support.customtabs.trusted.TRUSTED_WEB_ACTIVITY_SERVICE" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </service>
-
-        <meta-data android:name="android.webkit.WebView.MetricsOptOut" android:value="true" />
 
     </application>
 </manifest>
