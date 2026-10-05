@@ -1,12 +1,16 @@
 <!DOCTYPE html>
-<html lang="no">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <script>
   (function() {
     try {
       var saved = localStorage.getItem('momentum-theme');
-      if (saved === 'light') {
+      var sysLight = window.MomentumAndroid
+        ? window.MomentumAndroid.isSystemLight()
+        : (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
+      var light = saved === 'light' || (saved === 'system' && sysLight);
+      if (light) {
         document.documentElement.setAttribute('data-theme', 'light');
       }
     } catch (e) {}
@@ -70,15 +74,16 @@
     margin: 0 auto;
     min-height: 100vh;
     position: relative;
+    padding-top: 52px;
     padding-bottom: 100px;
   }
 
   header {
     position: sticky;
-    top: 0;
+    top: 52px;
     z-index: 5;
     background: linear-gradient(180deg, var(--bg) 80%, transparent);
-    padding: 28px 20px 16px;
+    padding: 16px 20px 16px;
   }
 
   header h1 {
@@ -174,6 +179,34 @@
     transform: scale(0.985);
     border-color: #3a3e47;
   }
+
+  .group-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .group-card:active { border-color: var(--accent); transform: scale(0.985); }
+  .group-card-name { font-size: 17px; font-weight: 700; color: var(--text); }
+  .group-card-count {
+    font-size: 12px;
+    color: var(--text-dim);
+    background: var(--bg-elevated);
+    border-radius: 10px;
+    padding: 3px 10px;
+  }
+  .group-header-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 4px;
+  }
+  .group-title { font-size: 19px; font-weight: 700; margin: 0; }
 
   .card.holding {
     border-color: var(--accent);
@@ -380,6 +413,24 @@
   }
   .field input:focus, .field textarea:focus {
     border-color: var(--accent);
+  }
+  .field select {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 13px 14px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+  }
+  .field select:focus { border-color: var(--accent); }
+  .field-hint {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 7px;
+    line-height: 1.4;
   }
   .field input:disabled, .field textarea:disabled {
     opacity: 0.45;
@@ -871,13 +922,91 @@
     white-space: nowrap;
   }
   .nav-text-btn:active { opacity: 0.6; }
-  .nav-btn-group {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 4px 12px;
-    flex-shrink: 0;
+
+  /* --- Fixed top bar: same buttons, same place, on every page --- */
+  #topBar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 52px;
+    z-index: 25;
+    background: var(--bg);
   }
+  .top-bar-inner {
+    max-width: 480px;
+    height: 100%;
+    margin: 0 auto;
+    padding: 0 8px 0 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .top-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .top-nav .nav-text-btn { height: 52px; }
+  .nav-page-btn.active { color: var(--accent); }
+  .top-actions { display: flex; align-items: center; gap: 2px; }
+  .top-dots-btn {
+    width: 44px;
+    height: 44px;
+    background: none;
+    border: none;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50%;
+  }
+  .top-dots-btn:active { background: var(--bg-card); }
+  @media (max-width: 350px) {
+    .top-nav { gap: 8px; }
+    .top-nav .nav-text-btn { font-size: 11px; }
+  }
+
+  #themeMenu {
+    position: fixed;
+    top: 48px;
+    right: max(10px, calc((100vw - 480px) / 2 + 10px));
+    min-width: 190px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 6px;
+    z-index: 70;
+    display: none;
+    box-shadow: 0 14px 34px rgba(0,0,0,0.45);
+  }
+  #themeMenu.show { display: block; }
+  .theme-menu-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    padding: 8px 12px 6px;
+  }
+  .theme-choice {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 14.5px;
+    font-family: inherit;
+    padding: 11px 12px;
+    border-radius: 9px;
+    cursor: pointer;
+    text-align: left;
+  }
+  .theme-choice:active { background: var(--bg-card); }
+  .theme-choice.active { color: var(--accent); font-weight: 700; }
+  .theme-choice.active::after { content: '\2713'; }
 
   .back-btn {
     background: none;
@@ -895,7 +1024,7 @@
     color: var(--accent);
   }
 
-  /* --- Muskelside --- */
+  /* --- Muscle page --- */
   #musclePage {
     position: absolute;
     inset: 0;
@@ -904,7 +1033,7 @@
     display: none;
     flex-direction: column;
     min-height: 100vh;
-    padding: 28px 20px 120px;
+    padding: 72px 20px 120px;
   }
   #musclePage.show { display: flex; }
 
@@ -1142,7 +1271,7 @@
     flex-direction: column;
     align-items: center;
     min-height: 100vh;
-    padding: 28px 20px 120px;
+    padding: 72px 20px 120px;
   }
   #timerPage.show { display: flex; }
   #timerPage .muscle-page-header { width: 100%; }
@@ -1250,6 +1379,78 @@
     color: #0e0f12;
     border-color: var(--accent);
   }
+  .timer-sound-card {
+    width: 100%;
+    max-width: 320px;
+    margin-top: 22px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 6px 16px 14px;
+  }
+  .timer-sound-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .timer-sound-row:last-of-type { border-bottom: none; }
+  .timer-sound-label { font-size: 13.5px; color: var(--text); }
+  #timerSoundOptions { transition: opacity 0.2s ease; }
+  #timerSoundOptions.off { opacity: 0.4; pointer-events: none; }
+  .timer-switch {
+    position: relative;
+    width: 44px;
+    height: 26px;
+    flex-shrink: 0;
+    border-radius: 13px;
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+  .timer-switch-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+  .timer-switch[aria-checked="true"] { background: var(--accent); border-color: var(--accent); }
+  .timer-switch[aria-checked="true"] .timer-switch-knob { transform: translateX(18px); background: #0e0f12; }
+  .timer-tone-group { display: flex; gap: 6px; }
+  .timer-tone-btn {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 12.5px;
+    font-weight: 700;
+    border-radius: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+  .timer-tone-btn.active { background: var(--accent); border-color: var(--accent); color: #0e0f12; }
+  #timerVolume { flex: 1; max-width: 160px; accent-color: var(--accent); }
+  .timer-test-btn {
+    width: 100%;
+    margin-top: 8px;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 10px 0;
+    cursor: pointer;
+  }
+  .timer-test-btn:active { border-color: var(--accent); }
+
   .timer-round-label {
     margin-top: 22px;
     font-size: 12.5px;
@@ -1266,7 +1467,7 @@
     display: none;
     flex-direction: column;
     min-height: 100vh;
-    padding: 28px 20px 120px;
+    padding: 72px 20px 120px;
   }
   #programsPage.show { display: flex; }
 
@@ -1277,6 +1478,30 @@
     padding: 14px 16px;
     margin-bottom: 10px;
     cursor: pointer;
+  }
+  .program-card {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  }
+  .program-card.holding {
+    border-color: var(--accent);
+    transform: scale(0.98);
+    transition: border-color 0.5s linear, transform 0.2s ease;
+  }
+  .program-card.selected {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .program-card.selected .program-card-name { color: #0e0f12; }
+  .program-card.selected .program-card-sub { color: rgba(14, 15, 18, 0.72); }
+  :root[data-theme="light"] .program-card.selected .program-card-name { color: #ffffff; }
+  :root[data-theme="light"] .program-card.selected .program-card-sub { color: rgba(255, 255, 255, 0.85); }
+  .program-hint {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin: 0 0 6px;
   }
   .program-card-name { font-size: 15px; font-weight: 700; color: var(--text); }
   .program-card-sub { font-size: 12px; color: var(--text-dim); margin-top: 3px; }
@@ -1379,6 +1604,32 @@
 </head>
 <body>
 
+<nav id="topBar" aria-label="Main navigation">
+  <div class="top-bar-inner">
+    <div class="top-nav">
+      <button class="nav-text-btn nav-page-btn active" data-page="main" aria-label="Home">Home</button>
+      <button class="nav-text-btn nav-page-btn" data-page="timer" aria-label="Rest Timer">Timer</button>
+      <button class="nav-text-btn nav-page-btn" data-page="programs" aria-label="Workout Programs">Programs</button>
+      <button class="nav-text-btn nav-page-btn" data-page="muscles" aria-label="Muscle Status">Muscles</button>
+    </div>
+    <div class="top-actions">
+      <button id="themeMenuBtn" class="top-dots-btn" aria-label="Appearance" aria-haspopup="true" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
+          <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div id="themeMenu" role="menu" aria-label="Appearance">
+  <div class="theme-menu-title">Appearance</div>
+  <button class="theme-choice" data-theme-choice="light" role="menuitemradio">Light</button>
+  <button class="theme-choice" data-theme-choice="dark" role="menuitemradio">Dark</button>
+  <button class="theme-choice" data-theme-choice="system" role="menuitemradio">Phone default</button>
+  <button id="installMenuItem" class="theme-choice" style="display:none; border-top:1px solid var(--border); border-radius:0 0 9px 9px; margin-top:4px;">Install app</button>
+</div>
+
 <div id="app">
   <header>
     <div class="header-top">
@@ -1388,15 +1639,8 @@
           <div class="hero-line"></div>
         </div>
       </div>
-      <div class="nav-btn-group">
-        <button id="installNavBtn" class="nav-text-btn" aria-label="Install app" style="display:none;">Install</button>
-        <button class="nav-text-btn theme-toggle-btn" aria-label="Toggle theme">Dark</button>
-        <button class="nav-text-btn nav-page-btn" data-page="timer" aria-label="Rest Timer">Timer</button>
-        <button class="nav-text-btn nav-page-btn" data-page="programs" aria-label="Workout Programs">Programs</button>
-        <button class="nav-text-btn nav-page-btn" data-page="muscles" aria-label="Muscle Status">Muscles</button>
-      </div>
     </div>
-    <p>Tap and hold an exercise to log a PR</p>
+    <p id="homeHint">Pick a muscle group</p>
     <p class="last-trained-label"></p>
   </header>
 
@@ -1416,12 +1660,6 @@
         <p id="weekLabel">Week</p>
         <p class="last-trained-label"></p>
       </div>
-    </div>
-    <div class="nav-btn-group">
-      <button class="nav-text-btn theme-toggle-btn" aria-label="Toggle theme">Dark</button>
-      <button class="nav-text-btn nav-page-btn" data-page="main" aria-label="Home">Home</button>
-      <button class="nav-text-btn nav-page-btn" data-page="timer" aria-label="Rest Timer">Timer</button>
-      <button class="nav-text-btn nav-page-btn" data-page="programs" aria-label="Workout Programs">Programs</button>
     </div>
   </div>
 
@@ -1464,12 +1702,6 @@
         <p>For use between sets</p>
       </div>
     </div>
-    <div class="nav-btn-group">
-      <button class="nav-text-btn theme-toggle-btn" aria-label="Toggle theme">Dark</button>
-      <button class="nav-text-btn nav-page-btn" data-page="main" aria-label="Home">Home</button>
-      <button class="nav-text-btn nav-page-btn" data-page="programs" aria-label="Workout Programs">Programs</button>
-      <button class="nav-text-btn nav-page-btn" data-page="muscles" aria-label="Muscle Status">Muscles</button>
-    </div>
   </div>
 
   <div class="timer-display-wrap">
@@ -1497,6 +1729,36 @@
     <button type="button" id="timerStartPauseBtn" class="timer-ctrl-btn primary">Start</button>
   </div>
 
+  <div class="timer-sound-card">
+    <div class="timer-sound-row">
+      <span class="timer-sound-label">Sound</span>
+      <button type="button" id="timerSoundToggle" class="timer-switch" role="switch" aria-checked="true" aria-label="Sound on or off"><span class="timer-switch-knob"></span></button>
+    </div>
+    <div id="timerSoundOptions">
+      <div class="timer-sound-row">
+        <span class="timer-sound-label">Tone</span>
+        <div class="timer-tone-group">
+          <button type="button" class="timer-tone-btn" data-tone="beep">Beep</button>
+          <button type="button" class="timer-tone-btn" data-tone="bell">Bell</button>
+          <button type="button" class="timer-tone-btn" data-tone="digital">Digital</button>
+        </div>
+      </div>
+      <div class="timer-sound-row">
+        <span class="timer-sound-label">Volume</span>
+        <input type="range" id="timerVolume" min="0" max="100" step="5" aria-label="Volume">
+      </div>
+      <div class="timer-sound-row">
+        <span class="timer-sound-label">3-2-1 countdown beeps</span>
+        <button type="button" id="timerCountdownToggle" class="timer-switch" role="switch" aria-checked="true" aria-label="Countdown beeps"><span class="timer-switch-knob"></span></button>
+      </div>
+      <div class="timer-sound-row">
+        <span class="timer-sound-label">Vibration</span>
+        <button type="button" id="timerVibrateToggle" class="timer-switch" role="switch" aria-checked="true" aria-label="Vibration"><span class="timer-switch-knob"></span></button>
+      </div>
+      <button type="button" id="timerTestSound" class="timer-test-btn">Test sound</button>
+    </div>
+  </div>
+
   <p class="timer-round-label">Rounds completed this session: <span id="timerRoundCount">0</span></p>
 </div>
 
@@ -1513,15 +1775,14 @@
         <p>Templates and your own routines</p>
       </div>
     </div>
-    <div class="nav-btn-group">
-      <button class="nav-text-btn theme-toggle-btn" aria-label="Toggle theme">Dark</button>
-      <button class="nav-text-btn nav-page-btn" data-page="main" aria-label="Home">Home</button>
-      <button class="nav-text-btn nav-page-btn" data-page="timer" aria-label="Rest Timer">Timer</button>
-      <button class="nav-text-btn nav-page-btn" data-page="muscles" aria-label="Muscle Status">Muscles</button>
-    </div>
   </div>
 
   <div id="programsListView">
+    <p class="program-hint">Press and hold a program for half a second to select it.</p>
+    <div id="programSelectedWrap" style="display:none;">
+      <p class="muscle-section-label">Selected program</p>
+      <div id="programSelectedList"></div>
+    </div>
     <p class="muscle-section-label">Templates</p>
     <div id="programTemplateList"></div>
 
@@ -1585,6 +1846,12 @@
       </div>
       <div id="suggestionText" class="suggestion-text" style="display:none;"></div>
       <button type="button" id="explainBtn" class="explain-btn" disabled>ⓘ Explanation</button>
+    </div>
+
+    <div class="field" id="categoryField">
+      <label>Muscle group <span class="opt">(optional)</span></label>
+      <select id="fieldCategory"></select>
+      <div class="field-hint">Not in the exercise list? Choose where it should be filed. If you skip this it goes under Other.</div>
     </div>
 
     <div class="row-2">
@@ -1805,6 +2072,93 @@
     { name: "Push Press", category: "Full Body", muscles: "Shoulders and triceps, powered by the legs.", howTo: "Hold a bar at shoulder height and dip slightly at the knees. Drive up through the legs and press the bar overhead in one motion." },
     { name: "Farmer's Carry", category: "Full Body", muscles: "Grip, core, traps and legs.", howTo: "Hold a heavy dumbbell or kettlebell in each hand at your sides. Walk forward for a set distance while keeping the torso upright." },
     { name: "Wall Ball Shot", category: "Full Body", muscles: "Legs, shoulders and core.", howTo: "Hold a medicine ball at your chest and squat down. Stand up explosively and throw the ball up against a wall target, catch it and repeat." },
+    { name: "Smith Machine Bench Press", category: "Chest", muscles: "Chest, front delts and triceps, with a fixed bar path.", howTo: "Lie on a flat bench under the Smith machine bar and unrack it. Lower the bar to your mid-chest with control, then press it back up until your arms are straight." },
+    { name: "Incline Dumbbell Press", category: "Chest", muscles: "Upper chest, front delts and triceps.", howTo: "Set a bench to 30-45 degrees and hold a dumbbell in each hand at chest level. Press the dumbbells up until your arms are straight, then lower with control." },
+    { name: "Decline Dumbbell Press", category: "Chest", muscles: "Lower chest, front delts and triceps.", howTo: "Lie on a decline bench holding a dumbbell in each hand at the sides of your lower chest. Press the dumbbells up and slightly together, then lower with control." },
+    { name: "Incline Dumbbell Fly", category: "Chest", muscles: "Upper chest, with a deep stretch.", howTo: "Lie on an incline bench with a dumbbell in each hand above your chest and a slight bend in the elbows. Open your arms out to the sides in a wide arc, then squeeze them back together." },
+    { name: "Chest Press Machine", category: "Chest", muscles: "Chest, front delts and triceps, with a guided path.", howTo: "Sit with your back against the pad and the handles at mid-chest height. Press the handles forward until your arms are nearly straight, then return with control." },
+    { name: "Incline Machine Press", category: "Chest", muscles: "Upper chest, front delts and triceps.", howTo: "Sit in the incline press machine with your back flat on the pad. Press the handles up and forward until your arms are nearly straight, then lower with control." },
+    { name: "Floor Press", category: "Chest", muscles: "Chest and triceps, with a shortened range of motion.", howTo: "Lie on the floor holding a bar or dumbbells over your chest. Lower the weight until your upper arms touch the floor, pause briefly, then press back up." },
+    { name: "Decline Push-ups", category: "Chest", muscles: "Upper chest, front delts and triceps.", howTo: "Place your feet on a bench and your hands on the floor, shoulder-width apart. Lower your chest toward the floor with a straight body, then push back up." },
+    { name: "Landmine Press", category: "Chest", muscles: "Upper chest, front delts and triceps.", howTo: "Hold the end of a landmine bar at chest height with one or both hands. Press the bar up and forward until your arm is straight, then lower with control." },
+    { name: "Wide-Grip Pull-Ups", category: "Back", muscles: "Lats and upper back, with biceps assisting.", howTo: "Hang from a bar with an overhand grip wider than your shoulders. Pull your chest toward the bar, then lower yourself with control." },
+    { name: "Neutral-Grip Pull-Ups", category: "Back", muscles: "Lats and mid-back, plus biceps.", howTo: "Hang from parallel handles with your palms facing each other. Pull yourself up until your chin clears the handles, then lower with control." },
+    { name: "Close-Grip Lat Pulldown", category: "Back", muscles: "Lats and biceps, with a longer range of motion.", howTo: "Sit at the pulldown machine and grip the V-handle. Pull the handle down to your upper chest, then let it rise with control." },
+    { name: "Reverse-Grip Lat Pulldown", category: "Back", muscles: "Lower lats and biceps.", howTo: "Grip the pulldown bar with your palms facing you, about shoulder-width apart. Pull the bar down toward your upper chest, then return with control." },
+    { name: "Single-Arm Cable Row", category: "Back", muscles: "Lats and mid-back, one side at a time.", howTo: "Sit or stand facing a low cable with a single handle. Pull the handle toward your hip while keeping your torso still, then extend your arm with control." },
+    { name: "Chest-Supported Row", category: "Back", muscles: "Mid-back and rear delts, without lower back strain.", howTo: "Lie chest-down on an incline bench holding a dumbbell in each hand. Row the weights up toward your ribs, squeezing your shoulder blades together, then lower." },
+    { name: "Machine Row", category: "Back", muscles: "Lats and mid-back.", howTo: "Sit with your chest against the pad and grip the handles. Pull your elbows back, squeezing your shoulder blades together, then return with control." },
+    { name: "Pendlay Row", category: "Back", muscles: "Mid-back, lats and rear delts, from a dead stop.", howTo: "Bend forward with your torso parallel to the floor and the bar on the ground. Explosively row the bar to your lower chest, then lower it back to the floor." },
+    { name: "Inverted Row", category: "Back", muscles: "Mid-back, lats and biceps.", howTo: "Lie under a bar set at waist height and grab it with an overhand grip. Keep your body straight and pull your chest to the bar, then lower with control." },
+    { name: "Seated Barbell Shoulder Press", category: "Shoulders", muscles: "Front and side delts, plus triceps.", howTo: "Sit on a bench with back support and hold a bar at shoulder height. Press the bar overhead until your arms are straight, then lower it to chin height." },
+    { name: "Smith Machine Shoulder Press", category: "Shoulders", muscles: "Front and side delts, plus triceps.", howTo: "Sit under the Smith machine bar and unrack it at shoulder height. Press it overhead until your arms are straight, then lower with control." },
+    { name: "Machine Lateral Raise", category: "Shoulders", muscles: "Side delts.", howTo: "Sit in the machine with your arms against the pads. Raise your arms out to the sides to shoulder height, then lower with control." },
+    { name: "Reverse Pec Deck", category: "Shoulders", muscles: "Rear delts and upper back.", howTo: "Sit facing the pad of the pec deck machine and grip the handles. Pull your arms out and back in a wide arc, then return with control." },
+    { name: "Cable Rear Delt Fly", category: "Shoulders", muscles: "Rear delts.", howTo: "Set two cables at shoulder height and grab each handle with the opposite hand. Pull your arms apart and out to the sides, then return with control." },
+    { name: "Cable Front Raise", category: "Shoulders", muscles: "Front delts.", howTo: "Stand facing away from a low cable and hold the handle in front of your thigh. Raise your arm straight ahead to shoulder height, then lower with control." },
+    { name: "Plate Front Raise", category: "Shoulders", muscles: "Front delts.", howTo: "Hold a weight plate with both hands at your thighs. Raise it straight in front of you to shoulder height, then lower with control." },
+    { name: "Lean-Away Lateral Raise", category: "Shoulders", muscles: "Side delts, with more tension at the bottom.", howTo: "Hold a support with one hand and lean away from it, holding a dumbbell in the other hand. Raise the dumbbell out to the side to shoulder height, then lower." },
+    { name: "Pike Push-ups", category: "Shoulders", muscles: "Front and side delts, plus triceps.", howTo: "Start in a downward-dog position with your hips high. Bend your elbows to lower your head toward the floor, then push back up." },
+    { name: "Alternating Dumbbell Curl", category: "Biceps", muscles: "Biceps and forearms.", howTo: "Stand holding a dumbbell in each hand. Curl one dumbbell up while the other arm stays down, then lower it and switch sides." },
+    { name: "Cross-Body Hammer Curl", category: "Biceps", muscles: "Biceps, brachialis and forearms.", howTo: "Hold a dumbbell in each hand with your palms facing in. Curl one dumbbell diagonally across your body toward the opposite shoulder, then lower and alternate." },
+    { name: "Rope Hammer Curl", category: "Biceps", muscles: "Biceps, brachialis and forearms.", howTo: "Attach a rope to a low cable and grip it with your palms facing each other. Curl the rope up toward your shoulders, then lower with control." },
+    { name: "Machine Preacher Curl", category: "Biceps", muscles: "Biceps, especially the lower portion.", howTo: "Sit with your upper arms resting on the pad and grip the handles. Curl the handles up toward your shoulders, then lower with control." },
+    { name: "Reverse Curl", category: "Biceps", muscles: "Forearms and brachialis, plus biceps.", howTo: "Hold a bar with an overhand grip at your thighs. Curl the bar up toward your chest, keeping your wrists straight, then lower with control." },
+    { name: "Drag Curl", category: "Biceps", muscles: "Biceps, especially the long head.", howTo: "Hold a barbell at your thighs and curl it up while dragging it close along your body, letting your elbows move back. Lower with control." },
+    { name: "Bayesian Cable Curl", category: "Biceps", muscles: "Biceps, with a deep stretch.", howTo: "Stand facing away from a low cable with the handle in one hand and your arm extended behind you. Curl the handle forward and up toward your shoulder, then lower." },
+    { name: "High Cable Curl", category: "Biceps", muscles: "Biceps, with a peak contraction.", howTo: "Stand between two high cables and grab the handles with your arms out to the sides. Curl the handles toward your head, then extend with control." },
+    { name: "Wide-Grip Barbell Curl", category: "Biceps", muscles: "Biceps, especially the short head.", howTo: "Hold a barbell with your hands wider than your shoulders. Curl the bar up toward your chest without swinging, then lower with control." },
+    { name: "Rope Triceps Pushdown", category: "Triceps", muscles: "Triceps, especially the lateral head.", howTo: "Attach a rope to a high cable and grip it with your elbows at your sides. Push the rope down and spread the ends apart at the bottom, then return with control." },
+    { name: "Reverse-Grip Triceps Pushdown", category: "Triceps", muscles: "Triceps, especially the medial head.", howTo: "Grip a straight bar on a high cable with an underhand grip. Push the bar down until your arms are straight, then return with control." },
+    { name: "Single-Arm Cable Pushdown", category: "Triceps", muscles: "Triceps, one side at a time.", howTo: "Hold a single handle on a high cable with your elbow at your side. Push the handle down until your arm is straight, then return with control." },
+    { name: "Overhead Cable Triceps Extension", category: "Triceps", muscles: "Triceps, especially the long head.", howTo: "Face away from a high cable with a rope overhead and your elbows bent. Extend your arms forward and up until they are straight, then return with control." },
+    { name: "Single-Arm Overhead Dumbbell Extension", category: "Triceps", muscles: "Triceps, especially the long head.", howTo: "Hold a dumbbell overhead in one hand. Lower it behind your head by bending the elbow, then extend back up." },
+    { name: "Machine Dips", category: "Triceps", muscles: "Triceps, chest and front delts.", howTo: "Sit in the dip machine and grip the handles. Press down until your arms are straight, then return with control." },
+    { name: "Tate Press", category: "Triceps", muscles: "Triceps, especially the medial head.", howTo: "Lie on a bench holding dumbbells over your chest with your elbows flared out. Lower the dumbbells toward your chest by bending the elbows, then press back up." },
+    { name: "Smith Machine Close-Grip Press", category: "Triceps", muscles: "Triceps, chest and front delts.", howTo: "Lie on a bench under the Smith machine bar with a close grip. Lower the bar to your lower chest, then press it back up." },
+    { name: "Weighted Dips", category: "Triceps", muscles: "Triceps, lower chest and front delts, with added load.", howTo: "Attach a weight to a dip belt and grip parallel bars. Lower your body until your upper arms are parallel to the floor, then press back up." },
+    { name: "Smith Machine Squat", category: "Quads", muscles: "Quadriceps and glutes, with a guided path.", howTo: "Stand under the Smith machine bar with your feet slightly forward. Squat down until your thighs are parallel to the floor, then stand back up." },
+    { name: "Box Squat", category: "Quads", muscles: "Quadriceps, glutes and hamstrings.", howTo: "Stand in front of a box with a bar on your upper back. Sit back and down onto the box with control, pause briefly, then drive up." },
+    { name: "Pause Squat", category: "Quads", muscles: "Quadriceps, glutes and core.", howTo: "Squat down with the bar on your upper back and hold the bottom position for 2-3 seconds. Drive up out of the hole without bouncing." },
+    { name: "Zercher Squat", category: "Quads", muscles: "Quadriceps, glutes, core and upper back.", howTo: "Hold a bar in the crook of your elbows in front of your torso. Squat down keeping your chest tall, then stand back up." },
+    { name: "Walking Lunges", category: "Quads", muscles: "Quadriceps, glutes and hamstrings, plus balance.", howTo: "Hold a dumbbell in each hand and step forward into a lunge. Push off the back foot to step the rear leg forward into the next lunge." },
+    { name: "Reverse Lunge", category: "Quads", muscles: "Quadriceps and glutes, with less knee stress.", howTo: "Stand upright and step one foot straight back. Lower until both knees are bent about 90 degrees, then push back to standing." },
+    { name: "Split Squat", category: "Quads", muscles: "Quadriceps and glutes, one side at a time.", howTo: "Stand in a staggered stance with one foot well in front of the other. Lower your back knee toward the floor, then press back up." },
+    { name: "Single-Leg Press", category: "Quads", muscles: "Quadriceps and glutes, one leg at a time.", howTo: "Sit in the leg press and place one foot on the platform. Lower the sled until your knee is bent about 90 degrees, then press back up." },
+    { name: "Pendulum Squat", category: "Quads", muscles: "Quadriceps, with a deep guided range of motion.", howTo: "Stand on the pendulum squat platform with your shoulders under the pads. Squat down as deep as is comfortable, then drive back up." },
+    { name: "Wall Sit", category: "Quads", muscles: "Quadriceps, with isometric endurance.", howTo: "Lean your back against a wall and slide down until your thighs are parallel to the floor. Hold the position for time." },
+    { name: "Dumbbell Romanian Deadlift", category: "Hamstrings", muscles: "Hamstrings and glutes, plus lower back.", howTo: "Hold a dumbbell in each hand in front of your thighs. Hinge at the hips, lowering the weights down your legs, then stand back up." },
+    { name: "Standing Leg Curl", category: "Hamstrings", muscles: "Hamstrings, one leg at a time.", howTo: "Stand facing the machine with the pad behind one ankle. Curl your heel toward your glutes, then lower with control." },
+    { name: "Single-Leg Seated Leg Curl", category: "Hamstrings", muscles: "Hamstrings, one leg at a time.", howTo: "Sit in the leg curl machine with one leg under the pad. Curl the pad down and back, then return with control." },
+    { name: "Stability Ball Leg Curl", category: "Hamstrings", muscles: "Hamstrings, glutes and core.", howTo: "Lie on your back with your heels on a stability ball and your hips lifted. Curl the ball toward your glutes, then extend your legs again." },
+    { name: "Slider Leg Curl", category: "Hamstrings", muscles: "Hamstrings and glutes.", howTo: "Lie on your back with your heels on sliders and your hips lifted. Slide your heels toward your glutes, then slide them back out." },
+    { name: "45-Degree Hip Extension", category: "Hamstrings", muscles: "Hamstrings, glutes and lower back.", howTo: "Position yourself on a 45-degree bench with your hips on the pad. Lower your torso with a flat back, then raise it until your body is in line." },
+    { name: "Deficit Romanian Deadlift", category: "Hamstrings", muscles: "Hamstrings and glutes, with a deeper stretch.", howTo: "Stand on a low platform holding a bar. Hinge at the hips, lowering the bar below the level of your feet, then stand back up." },
+    { name: "Dumbbell Stiff-Leg Deadlift", category: "Hamstrings", muscles: "Hamstrings and glutes.", howTo: "Hold a dumbbell in each hand with nearly straight knees. Hinge forward at the hips until you feel a hamstring stretch, then stand back up." },
+    { name: "Hip Thrust Machine", category: "Glutes", muscles: "Glutes and hamstrings.", howTo: "Sit in the hip thrust machine with the pad over your hips. Drive your hips up by squeezing the glutes, then lower with control." },
+    { name: "Smith Machine Hip Thrust", category: "Glutes", muscles: "Glutes and hamstrings.", howTo: "Sit with your upper back against a bench and the Smith machine bar over your hips. Drive your hips up, squeeze the glutes, then lower." },
+    { name: "Hip Abduction Machine", category: "Glutes", muscles: "Glutes, especially the outer hip.", howTo: "Sit in the machine with the pads against the outside of your knees. Push your legs apart, then return with control." },
+    { name: "Cable Hip Abduction", category: "Glutes", muscles: "Glutes, especially the outer hip.", howTo: "Attach an ankle cuff to a low cable and stand sideways to the machine. Lift the outside leg out to the side, then lower with control." },
+    { name: "High-Box Step-Up", category: "Glutes", muscles: "Glutes and quadriceps.", howTo: "Stand in front of a high box holding dumbbells. Place one foot on the box and drive up through the heel, then step down with control." },
+    { name: "Sumo Squat", category: "Glutes", muscles: "Glutes, inner thighs and quadriceps.", howTo: "Stand with a wide stance and your toes turned out, holding a weight at your chest. Squat down keeping your chest tall, then stand back up." },
+    { name: "Fire Hydrant", category: "Glutes", muscles: "Glutes, especially the outer hip.", howTo: "Get on all fours and lift one knee out to the side, keeping it bent. Lower with control and repeat." },
+    { name: "Clamshell", category: "Glutes", muscles: "Glutes, especially the outer hip.", howTo: "Lie on your side with your knees bent and your feet together. Open the top knee like a clamshell without rolling your hips, then close." },
+    { name: "Crunch", category: "Abs", muscles: "Rectus abdominis.", howTo: "Lie on your back with your knees bent and your hands by your head. Curl your shoulders off the floor by contracting the abs, then lower." },
+    { name: "Reverse Crunch", category: "Abs", muscles: "Lower abs.", howTo: "Lie on your back with your knees bent over your hips. Curl your hips off the floor toward your chest, then lower with control." },
+    { name: "Lying Leg Raise", category: "Abs", muscles: "Lower abs and hip flexors.", howTo: "Lie flat with your legs straight. Raise your legs to vertical, then lower them without letting your lower back arch." },
+    { name: "Hanging Knee Raise", category: "Abs", muscles: "Lower abs and hip flexors.", howTo: "Hang from a pull-up bar. Raise your knees toward your chest, then lower with control." },
+    { name: "Toes-to-Bar", category: "Abs", muscles: "Abs, hip flexors and grip.", howTo: "Hang from a bar and lift your straight legs until your toes touch the bar. Lower with control." },
+    { name: "Side Plank", category: "Abs", muscles: "Obliques and core.", howTo: "Lie on your side and prop yourself up on one forearm. Lift your hips so your body forms a straight line, and hold." },
+    { name: "Cable Woodchopper", category: "Abs", muscles: "Obliques and core.", howTo: "Set a cable high and hold the handle with both hands. Pull it diagonally down across your body, rotating your torso, then return." },
+    { name: "Hollow Body Hold", category: "Abs", muscles: "Rectus abdominis and deep core.", howTo: "Lie on your back and lift your legs and shoulders off the floor with your arms extended overhead. Hold the position with your lower back pressed down." },
+    { name: "Flutter Kicks", category: "Abs", muscles: "Lower abs and hip flexors.", howTo: "Lie on your back with your legs straight and just off the floor. Alternate kicking your legs up and down in small movements." },
+    { name: "Tibialis Raise", category: "Calves", muscles: "Tibialis anterior (front of the shin).", howTo: "Stand with your back against a wall and your heels a foot ahead of it. Lift the front of your feet toward your shins, then lower." },
+    { name: "Seated Single-Leg Calf Raise", category: "Calves", muscles: "Calves (soleus), one leg at a time.", howTo: "Sit with one foot on the platform and a weight over that knee. Raise your heel as high as possible, then lower with control." },
+    { name: "Hack Squat Calf Raise", category: "Calves", muscles: "Calves.", howTo: "Stand in the hack squat machine with the balls of your feet on the platform edge. Rise onto your toes, then lower with control." },
+    { name: "Standing Dumbbell Calf Raise", category: "Calves", muscles: "Calves.", howTo: "Hold a dumbbell in each hand and stand with the balls of your feet on a step. Raise your heels as high as possible, then lower." },
+    { name: "Barbell Shrug", category: "Traps", muscles: "Upper traps.", howTo: "Hold a barbell in front of your thighs with your arms straight. Shrug your shoulders straight up toward your ears, then lower with control." },
+    { name: "Dumbbell Shrug", category: "Traps", muscles: "Upper traps.", howTo: "Hold a dumbbell in each hand at your sides. Shrug your shoulders up as high as possible, hold briefly, then lower." },
+    { name: "Rack Pull", category: "Traps", muscles: "Traps, upper back and lower back.", howTo: "Set a bar on pins at knee height in a power rack. Stand up with the bar by extending your hips and squeezing your shoulder blades together, then lower." },
   ];
   EXERCISE_LIBRARY.sort((a, b) => a.name.localeCompare(b.name, 'en'));
 
@@ -2187,6 +2541,26 @@
   }
 
   let exercises = loadExercises();
+
+  // Muscle groups: every group in the exercise list, plus a catch-all
+  const OTHER_CATEGORY = 'Other';
+
+  function getAllCategories() {
+    const cats = new Set(EXERCISE_LIBRARY.map(e => e.category));
+    cats.add(OTHER_CATEGORY);
+    return [...cats].sort((a, b) => a.localeCompare(b, 'en'));
+  }
+
+  // Exercises saved before muscle groups existed: take the group from the
+  // exercise list if the name matches, otherwise file them under Other
+  exercises.forEach(ex => {
+    if (!ex.category) {
+      const lib = findExactExercise(ex.name);
+      ex.category = lib ? lib.category : OTHER_CATEGORY;
+    }
+  });
+
+  let homeGroup = null; // null = muscle-group overview, otherwise the open group
   let editingId = null; // null = new exercise, otherwise editing existing
   let currentImage = null;
   let selectedExercise = null; // matched exercise from library, for explanation
@@ -2270,6 +2644,10 @@
   const pickExerciseBtn = document.getElementById('pickExerciseBtn');
   const explainBtn = document.getElementById('explainBtn');
   const suggestionText = document.getElementById('suggestionText');
+  const categoryField = document.getElementById('categoryField');
+  const fieldCategory = document.getElementById('fieldCategory');
+  fieldCategory.innerHTML = '<option value="">Not selected (goes under Other)</option>' +
+    getAllCategories().map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
   const pickerOverlay = document.getElementById('pickerOverlay');
   const pickerSheet = document.getElementById('pickerSheet');
   const pickerTitle = document.getElementById('pickerTitle');
@@ -2285,36 +2663,76 @@
   const explainMuscles = document.getElementById('explainMuscles');
 
   const THEME_KEY = 'momentum-theme';
+  const systemLightQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: light)') : null;
 
-  function getCurrentTheme() {
-    return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  function getThemePref() {
+    try {
+      const v = localStorage.getItem(THEME_KEY);
+      return (v === 'light' || v === 'dark' || v === 'system') ? v : 'dark';
+    } catch (e) {
+      return 'dark';
+    }
   }
 
-  function applyTheme(theme) {
-    if (theme === 'light') {
+  function applyThemePref(pref) {
+    const phoneIsLight = window.MomentumAndroid
+      ? !!window.MomentumAndroid.isSystemLight()
+      : !!(systemLightQuery && systemLightQuery.matches);
+    const light = pref === 'light' || (pref === 'system' && phoneIsLight);
+    if (window.MomentumAndroid && window.MomentumAndroid.setTheme) {
+      try { window.MomentumAndroid.setTheme(light); } catch (e) {}
+    }
+    if (light) {
       document.documentElement.setAttribute('data-theme', 'light');
     } else {
       document.documentElement.removeAttribute('data-theme');
     }
-    // Button shows the mode you'll switch TO, not the current one
-    const label = theme === 'light' ? 'Dark' : 'Light';
-    document.querySelectorAll('.theme-toggle-btn').forEach(btn => { btn.textContent = label; });
+    document.querySelectorAll('[data-theme-choice]').forEach(b => {
+      const on = b.dataset.themeChoice === pref;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
   }
 
-  function toggleTheme() {
-    const next = getCurrentTheme() === 'light' ? 'dark' : 'light';
-    applyTheme(next);
+  function setThemePref(pref) {
     try {
-      localStorage.setItem(THEME_KEY, next);
+      localStorage.setItem(THEME_KEY, pref);
     } catch (e) {
       console.error('Could not save theme:', e);
     }
+    applyThemePref(pref);
   }
 
-  applyTheme(getCurrentTheme());
-  document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
-    btn.addEventListener('click', toggleTheme);
+  const themeMenuBtn = document.getElementById('themeMenuBtn');
+  const themeMenu = document.getElementById('themeMenu');
+
+  function closeThemeMenu() {
+    themeMenu.classList.remove('show');
+    themeMenuBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  themeMenuBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = themeMenu.classList.toggle('show');
+    themeMenuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
   });
+  themeMenu.addEventListener('click', (e) => e.stopPropagation());
+  document.addEventListener('click', closeThemeMenu);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeThemeMenu(); });
+  document.querySelectorAll('[data-theme-choice]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setThemePref(btn.dataset.themeChoice);
+      closeThemeMenu();
+    });
+  });
+  if (systemLightQuery) {
+    const onSystemChange = () => { if (getThemePref() === 'system') applyThemePref('system'); };
+    if (systemLightQuery.addEventListener) systemLightQuery.addEventListener('change', onSystemChange);
+    else if (systemLightQuery.addListener) systemLightQuery.addListener(onSystemChange);
+  }
+  applyThemePref(getThemePref());
+  // The Android app calls this when the phone switches between light and dark
+  window.momentumSystemThemeChanged = () => { if (getThemePref() === 'system') applyThemePref('system'); };
 
   const musclePage = document.getElementById('musclePage');
   const backFromMuscles = document.getElementById('backFromMuscles');
@@ -2333,14 +2751,62 @@
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
+  const homeHint = document.getElementById('homeHint');
+
   function render() {
     list.innerHTML = '';
     if (exercises.length === 0) {
+      homeGroup = null;
+      homeHint.textContent = 'Tap + to log your first exercise';
       list.innerHTML = '<div class="empty-state">No exercises yet.<br>Tap + to add your first exercise.</div>';
       return;
     }
-    const sortedExercises = [...exercises].sort((a, b) => a.name.localeCompare(b.name, 'en'));
-    sortedExercises.forEach(ex => {
+    if (homeGroup !== null && !exercises.some(e => e.category === homeGroup)) homeGroup = null;
+    if (homeGroup === null) renderGroupOverview();
+    else renderGroupExercises();
+  }
+
+  function renderGroupOverview() {
+    homeHint.textContent = 'Pick a muscle group';
+    const counts = {};
+    exercises.forEach(ex => { counts[ex.category] = (counts[ex.category] || 0) + 1; });
+    Object.keys(counts)
+      .sort((a, b) => a.localeCompare(b, 'en'))
+      .forEach(cat => {
+        const card = document.createElement('div');
+        card.className = 'group-card';
+        card.innerHTML = `<span class="group-card-name">${escapeHtml(cat)}</span><span class="group-card-count">${counts[cat]}</span>`;
+        card.addEventListener('click', () => {
+          homeGroup = cat;
+          render();
+          window.scrollTo(0, 0);
+        });
+        list.appendChild(card);
+      });
+  }
+
+  function renderGroupExercises() {
+    homeHint.textContent = 'Tap and hold an exercise to log a PR';
+    const headerRow = document.createElement('div');
+    headerRow.className = 'group-header-row';
+    headerRow.innerHTML = `
+      <button type="button" class="back-btn" aria-label="Back to muscle groups">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
+          <path d="M19 12H5M5 12L11 6M5 12L11 18" stroke="currentColor" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"/>
+        </svg>
+      </button>
+      <h2 class="group-title">${escapeHtml(homeGroup)}</h2>`;
+    headerRow.querySelector('.back-btn').addEventListener('click', () => {
+      homeGroup = null;
+      render();
+      window.scrollTo(0, 0);
+    });
+    list.appendChild(headerRow);
+
+    const inGroup = exercises
+      .filter(ex => ex.category === homeGroup)
+      .sort((a, b) => a.name.localeCompare(b.name, 'en'));
+    inGroup.forEach(ex => {
       const card = document.createElement('div');
       card.className = 'card';
       card.innerHTML = `
@@ -2402,12 +2868,15 @@
     fieldComment.disabled = false;
     imageField.style.display = 'block';
     pickExerciseBtn.style.display = 'flex';
+    fieldCategory.value = '';
     updateExerciseMatch();
   }
 
   function updateExerciseMatch() {
     const val = fieldName.value;
     const exact = findExactExercise(val);
+    // Exercises in the list already know their muscle group; custom ones ask for it
+    categoryField.style.display = exact ? 'none' : 'block';
     if (exact) {
       selectedExercise = exact;
       explainBtn.disabled = false;
@@ -2445,6 +2914,7 @@
     editingId = null;
     resetForm();
     sheetTitle.textContent = 'New Exercise';
+    if (homeGroup !== null) fieldCategory.value = homeGroup;
     prNote.style.display = 'none';
     progressBtn.style.display = 'none';
     setLogMode('pr');
@@ -2465,6 +2935,7 @@
     fieldComment.value = ex.comment || '';
     currentImage = ex.image || null;
     if (currentImage) renderImagePreview();
+    fieldCategory.value = ex.category || '';
     updateExerciseMatch();
     updateOneRmText();
     warmupPanel.style.display = 'none';
@@ -2669,6 +3140,8 @@
     }
     errorText.textContent = '';
     const nowIso = new Date().toISOString();
+    const libMatch = findExactExercise(name);
+    const category = libMatch ? libMatch.category : (fieldCategory.value || OTHER_CATEGORY);
 
     if (editingId === null) {
       exercises.unshift({
@@ -2679,11 +3152,13 @@
         comment: capitalizeFirst(fieldComment.value.trim()),
         image: currentImage,
         lastEdited: nowIso,
+        category,
         history: [{ date: nowIso, weight, reps }]
       });
     } else {
       const ex = exercises.find(e => e.id === editingId);
       if (ex) {
+        ex.category = category;
         if (!ex.history) ex.history = [{ date: ex.lastEdited, weight: ex.weight, reps: ex.reps }];
         ex.history.push({ date: nowIso, weight, reps });
 
@@ -2703,6 +3178,7 @@
         }
       }
     }
+    if (homeGroup !== null) homeGroup = category; // stay with the exercise you just saved
     render();
     saveExercisesToStorage();
     markTrainedToday();
@@ -2865,6 +3341,11 @@
     musclePage.classList.remove('show');
     timerPage.classList.remove('show');
     programsPage.classList.remove('show');
+    closeThemeMenu();
+    document.querySelectorAll('.nav-page-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.page === (target || 'main'));
+    });
+    window.scrollTo(0, 0);
 
     if (target === 'muscles') {
       musclePage.classList.add('show');
@@ -2883,10 +3364,20 @@
     }
   }
 
-  // Every nav button on every page (main header + each sub-page header) shares
-  // this class, so you can jump between Timer / Programs / Muscles from anywhere
+  // The fixed top bar is the same on every page, so you can jump between
+  // Home / Timer / Programs / Muscles from anywhere
   document.querySelectorAll('.nav-page-btn').forEach(btn => {
-    btn.addEventListener('click', () => switchPage(btn.dataset.page));
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.page;
+      if (target === 'main') {
+        const onHome = !document.querySelector('#musclePage.show, #timerPage.show, #programsPage.show');
+        if (onHome && homeGroup !== null) {
+          homeGroup = null;
+          render();
+        }
+      }
+      switchPage(target);
+    });
   });
 
   backFromMuscles.addEventListener('click', () => switchPage('main'));
@@ -2904,6 +3395,36 @@
   });
 
 
+
+  // Android's back button: close whatever is open, step up one level, and only
+  // leave the app (return false) when you are already on the start page
+  window.momentumHandleBack = function () {
+    if (themeMenu.classList.contains('show')) { closeThemeMenu(); return true; }
+    if (progressModal.classList.contains('show')) { closeProgress(); return true; }
+    if (explainModal.classList.contains('show')) { closeExplain(); return true; }
+    if (pickerSheet.classList.contains('show')) {
+      if (pickerView === 'exercises') { pickerView = 'categories'; pickerCategory = null; renderPickerList(); }
+      else closePicker();
+      return true;
+    }
+    if (sheet.classList.contains('show')) { closeSheet(); return true; }
+    if (programsPage.classList.contains('show')) {
+      const inSubView = programDetailView.style.display !== 'none' || programEditView.style.display !== 'none';
+      if (inSubView) showProgramsList(); else switchPage('main');
+      return true;
+    }
+    if (musclePage.classList.contains('show') || timerPage.classList.contains('show')) {
+      switchPage('main');
+      return true;
+    }
+    if (homeGroup !== null) {
+      homeGroup = null;
+      render();
+      window.scrollTo(0, 0);
+      return true;
+    }
+    return false;
+  };
 
   bodyTabs.forEach(tab => {
     tab.addEventListener('click', () => {
@@ -3051,6 +3572,7 @@
   let timerTotalSeconds = 90;
   let timerRemaining = 90;
   let timerInterval = null;
+  let timerEndAt = 0;
   let timerRunning = false;
   let timerRoundCount = 0;
   const TIMER_RING_CIRCUMFERENCE = 2 * Math.PI * 88;
@@ -3062,10 +3584,170 @@
   const timerStartPauseBtn = document.getElementById('timerStartPauseBtn');
   const timerRoundCountEl = document.getElementById('timerRoundCount');
 
+  // --- Timer sound settings ---
+  const TIMER_SOUND_KEY = 'momentum-timer-sound';
+  const timerSound = { on: true, tone: 'beep', volume: 70, countdown: true, vibrate: true };
+  try {
+    Object.assign(timerSound, JSON.parse(localStorage.getItem(TIMER_SOUND_KEY) || '{}'));
+  } catch (e) {}
+
+  const timerSoundToggle = document.getElementById('timerSoundToggle');
+  const timerSoundOptions = document.getElementById('timerSoundOptions');
+  const timerVolume = document.getElementById('timerVolume');
+  const timerCountdownToggle = document.getElementById('timerCountdownToggle');
+  const timerVibrateToggle = document.getElementById('timerVibrateToggle');
+  const timerTestSound = document.getElementById('timerTestSound');
+  const timerToneBtns = document.querySelectorAll('.timer-tone-btn');
+
+  function saveTimerSound() {
+    try {
+      localStorage.setItem(TIMER_SOUND_KEY, JSON.stringify(timerSound));
+    } catch (e) {
+      console.error('Could not save timer sound settings:', e);
+    }
+  }
+
+  function renderTimerSoundUi() {
+    timerSoundToggle.setAttribute('aria-checked', timerSound.on ? 'true' : 'false');
+    timerSoundOptions.classList.toggle('off', !timerSound.on);
+    timerVolume.value = timerSound.volume;
+    timerCountdownToggle.setAttribute('aria-checked', timerSound.countdown ? 'true' : 'false');
+    timerVibrateToggle.setAttribute('aria-checked', timerSound.vibrate ? 'true' : 'false');
+    timerToneBtns.forEach(b => b.classList.toggle('active', b.dataset.tone === timerSound.tone));
+  }
+
+  // Phones only let a page play sound after the user has tapped something, and the
+  // audio context has to be created/resumed inside that tap. We do it on every
+  // Start, Test and settings tap, so the alarm can play when the timer runs out.
+  let audioCtx = null;
+  function ensureAudio() {
+    try {
+      if (!audioCtx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) audioCtx = new AC();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    } catch (e) {
+      console.error('Audio not available:', e);
+    }
+    return audioCtx;
+  }
+
+  function masterGain() {
+    return (timerSound.volume / 100) * 0.6;
+  }
+
+  function playTone(freq, offset, dur, type, vol) {
+    const ctx = audioCtx;
+    if (!ctx) return;
+    const t0 = ctx.currentTime + offset;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t0);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, vol), t0 + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.03);
+  }
+
+  function playAlarm() {
+    if (!timerSound.on || !ensureAudio()) return;
+    const v = masterGain();
+    if (timerSound.tone === 'bell') {
+      [0, 0.9].forEach(o => {
+        playTone(660, o, 1.3, 'sine', v);
+        playTone(1320, o, 0.9, 'sine', v * 0.4);
+        playTone(1980, o, 0.5, 'sine', v * 0.2);
+      });
+    } else if (timerSound.tone === 'digital') {
+      [0, 0.16, 0.32, 0.48].forEach(o => playTone(1000, o, 0.09, 'square', v * 0.5));
+    } else {
+      playTone(880, 0, 0.18, 'sine', v);
+      playTone(880, 0.28, 0.18, 'sine', v);
+      playTone(880, 0.56, 0.36, 'sine', v);
+    }
+  }
+
+  function playCountdownTick() {
+    if (!timerSound.on || !timerSound.countdown || !ensureAudio()) return;
+    playTone(660, 0, 0.1, timerSound.tone === 'digital' ? 'square' : 'sine', masterGain() * (timerSound.tone === 'digital' ? 0.4 : 0.8));
+  }
+
+  function vibrateDone() {
+    if (timerSound.vibrate && navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  }
+
+  timerSoundToggle.addEventListener('click', () => {
+    timerSound.on = !timerSound.on;
+    if (timerSound.on) ensureAudio();
+    saveTimerSound();
+    renderTimerSoundUi();
+  });
+  timerCountdownToggle.addEventListener('click', () => {
+    timerSound.countdown = !timerSound.countdown;
+    saveTimerSound();
+    renderTimerSoundUi();
+  });
+  timerVibrateToggle.addEventListener('click', () => {
+    timerSound.vibrate = !timerSound.vibrate;
+    saveTimerSound();
+    renderTimerSoundUi();
+    if (timerSound.vibrate && navigator.vibrate) navigator.vibrate(60);
+  });
+  timerToneBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      timerSound.tone = btn.dataset.tone;
+      saveTimerSound();
+      renderTimerSoundUi();
+      ensureAudio();
+      playAlarm(); // preview the tone you just picked
+    });
+  });
+  timerVolume.addEventListener('input', () => {
+    timerSound.volume = parseInt(timerVolume.value, 10);
+    saveTimerSound();
+  });
+  timerVolume.addEventListener('change', () => { ensureAudio(); playAlarm(); });
+  timerTestSound.addEventListener('click', () => {
+    ensureAudio();
+    playAlarm();
+    vibrateDone();
+  });
+  renderTimerSoundUi();
+
+  // --- Keep the screen awake while a timer runs, so the alarm isn't missed ---
+  let wakeLock = null;
+  async function requestWakeLock() {
+    if (window.MomentumAndroid && window.MomentumAndroid.keepScreenOn) {
+      try { window.MomentumAndroid.keepScreenOn(true); } catch (e) {}
+    }
+    try {
+      if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+    } catch (e) {}
+  }
+  function releaseWakeLock() {
+    if (window.MomentumAndroid && window.MomentumAndroid.keepScreenOn) {
+      try { window.MomentumAndroid.keepScreenOn(false); } catch (e) {}
+    }
+    try {
+      if (wakeLock) { wakeLock.release(); wakeLock = null; }
+    } catch (e) {}
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && timerRunning) {
+      requestWakeLock();
+      tickTimer();
+    }
+  });
+
   function formatTimerDigits(totalSec) {
     const m = Math.floor(totalSec / 60);
-    const s = totalSec % 60;
-    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    const sec = totalSec % 60;
+    return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
   }
 
   function updateTimerDisplay() {
@@ -3083,6 +3765,7 @@
 
   function setTimerDuration(sec) {
     stopTimerInterval();
+    releaseWakeLock();
     timerTotalSeconds = sec;
     timerRemaining = sec;
     timerRunning = false;
@@ -3106,55 +3789,48 @@
     timerCustomInput.value = '';
   });
 
-  function playTimerBeep() {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = 880;
-      gain.gain.setValueAtTime(0.001, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.55);
-    } catch (e) {}
-    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-  }
-
+  // The remaining time is worked out from a fixed end time, so it stays correct
+  // even if the phone slows the page down while the screen is off
   function tickTimer() {
-    timerRemaining -= 1;
-    if (timerRemaining <= 0) {
-      timerRemaining = 0;
+    if (!timerRunning) return;
+    const remaining = Math.max(0, Math.ceil((timerEndAt - Date.now()) / 1000));
+    if (remaining !== timerRemaining) {
+      timerRemaining = remaining;
       updateTimerDisplay();
+      if (remaining > 0 && remaining <= 3) playCountdownTick();
+    }
+    if (remaining <= 0) {
       stopTimerInterval();
+      releaseWakeLock();
       timerRunning = false;
       timerStartPauseBtn.textContent = 'Start';
       timerRoundCount += 1;
       timerRoundCountEl.textContent = String(timerRoundCount);
-      playTimerBeep();
-      return;
+      playAlarm();
+      vibrateDone();
     }
-    updateTimerDisplay();
   }
 
   timerStartPauseBtn.addEventListener('click', () => {
     if (timerRunning) {
       stopTimerInterval();
+      releaseWakeLock();
       timerRunning = false;
       timerStartPauseBtn.textContent = 'Start';
     } else {
+      ensureAudio(); // inside the tap, so the alarm is allowed to play later
       if (timerRemaining <= 0) timerRemaining = timerTotalSeconds;
+      timerEndAt = Date.now() + timerRemaining * 1000;
       timerRunning = true;
       timerStartPauseBtn.textContent = 'Pause';
-      timerInterval = setInterval(tickTimer, 1000);
+      timerInterval = setInterval(tickTimer, 200);
+      requestWakeLock();
     }
   });
 
   timerResetBtn.addEventListener('click', () => {
     stopTimerInterval();
+    releaseWakeLock();
     timerRunning = false;
     timerRemaining = timerTotalSeconds;
     timerStartPauseBtn.textContent = 'Start';
@@ -3268,28 +3944,70 @@
     renderProgramLists();
   }
 
+  const SELECTED_PROGRAM_KEY = 'momentum-selected-program';
+  let selectedProgramId = null;
+  try { selectedProgramId = localStorage.getItem(SELECTED_PROGRAM_KEY) || null; } catch (e) {}
+
+  const programSelectedWrap = document.getElementById('programSelectedWrap');
+  const programSelectedList = document.getElementById('programSelectedList');
+  let lastProgramLongPress = 0;
+
+  function setSelectedProgram(id) {
+    // Holding the selected program again deselects it; holding another one moves the selection
+    selectedProgramId = (selectedProgramId === id) ? null : id;
+    try {
+      if (selectedProgramId) localStorage.setItem(SELECTED_PROGRAM_KEY, selectedProgramId);
+      else localStorage.removeItem(SELECTED_PROGRAM_KEY);
+    } catch (e) {
+      console.error('Could not save selected program:', e);
+    }
+    renderProgramLists();
+  }
+
+  function makeProgramCard(p, isCustom) {
+    const card = document.createElement('div');
+    card.className = 'program-card' + (p.id === selectedProgramId ? ' selected' : '');
+    const sub = isCustom
+      ? `${p.days.length} day${p.days.length === 1 ? '' : 's'} · your own program`
+      : p.description;
+    card.innerHTML = `<div class="program-card-name">${escapeHtml(p.name)}</div><div class="program-card-sub">${escapeHtml(sub)}</div>`;
+    card.addEventListener('click', () => {
+      if (Date.now() - lastProgramLongPress < 700) return; // the click that follows a long press
+      showProgramDetail(p, isCustom);
+    });
+    attachLongPress(card, () => {
+      lastProgramLongPress = Date.now();
+      setSelectedProgram(p.id);
+    }, 500);
+    return card;
+  }
+
   function renderProgramLists() {
+    programSelectedList.innerHTML = '';
     programTemplateList.innerHTML = '';
+    programCustomList.innerHTML = '';
+
+    const selTemplate = PROGRAM_TEMPLATES.find(p => p.id === selectedProgramId);
+    const selCustom = customPrograms.find(p => p.id === selectedProgramId);
+    if (!selTemplate && !selCustom && selectedProgramId) selectedProgramId = null; // deleted program
+
+    // The selected program sits at the top; deselect it and it drops back to its own place
+    programSelectedWrap.style.display = (selTemplate || selCustom) ? 'block' : 'none';
+    if (selTemplate) programSelectedList.appendChild(makeProgramCard(selTemplate, false));
+    if (selCustom) programSelectedList.appendChild(makeProgramCard(selCustom, true));
+
     PROGRAM_TEMPLATES.forEach(p => {
-      const card = document.createElement('div');
-      card.className = 'program-card';
-      card.innerHTML = `<div class="program-card-name">${escapeHtml(p.name)}</div><div class="program-card-sub">${escapeHtml(p.description)}</div>`;
-      card.addEventListener('click', () => showProgramDetail(p, false));
-      programTemplateList.appendChild(card);
+      if (p.id === selectedProgramId) return;
+      programTemplateList.appendChild(makeProgramCard(p, false));
     });
 
-    programCustomList.innerHTML = '';
     if (!customPrograms.length) {
       programEmptyState.style.display = 'block';
     } else {
       programEmptyState.style.display = 'none';
       customPrograms.forEach(p => {
-        const card = document.createElement('div');
-        card.className = 'program-card';
-        const dayCount = p.days.length;
-        card.innerHTML = `<div class="program-card-name">${escapeHtml(p.name)}</div><div class="program-card-sub">${dayCount} day${dayCount === 1 ? '' : 's'} · your own program</div>`;
-        card.addEventListener('click', () => showProgramDetail(p, true));
-        programCustomList.appendChild(card);
+        if (p.id === selectedProgramId) return;
+        programCustomList.appendChild(makeProgramCard(p, true));
       });
     }
   }
@@ -3421,8 +4139,13 @@
   render();
   renderLastTrainedLabels();
 
+  // Ask the browser engine not to clear this app's saved data when the phone runs low on space
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist().catch(() => {});
+  }
+
   // --- Service worker (offline + installation) ---
-  if ('serviceWorker' in navigator) {
+  if ('serviceWorker' in navigator && !window.MomentumAndroid) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('service-worker.js').catch((e) => {
         console.error('Service worker registration failed:', e);
@@ -3430,8 +4153,8 @@
     });
   }
 
-  // --- "Add app" banner + nav button (Chrome/Android) ---
-  const installNavBtn = document.getElementById('installNavBtn');
+  // --- "Add app" banner + menu item (Chrome/Android) ---
+  const installMenuItem = document.getElementById('installMenuItem');
   const installBanner = document.getElementById('installBanner');
   const installBtn = document.getElementById('installBtn');
   const installDismiss = document.getElementById('installDismiss');
@@ -3439,7 +4162,7 @@
 
   window.addEventListener('beforeinstallprompt', (e) => {
     deferredPrompt = e;
-    installNavBtn.style.display = 'flex';
+    installMenuItem.style.display = 'flex';
     if (!localStorage.getItem('momentum-install-dismissed')) {
       e.preventDefault();
       installBanner.classList.add('show');
@@ -3448,13 +4171,14 @@
 
   async function triggerInstall() {
     if (!deferredPrompt) return;
+    closeThemeMenu();
     deferredPrompt.prompt();
     await deferredPrompt.userChoice;
     deferredPrompt = null;
-    installNavBtn.style.display = 'none';
+    installMenuItem.style.display = 'none';
     installBanner.classList.remove('show');
   }
-  installNavBtn.addEventListener('click', triggerInstall);
+  installMenuItem.addEventListener('click', triggerInstall);
   installBtn && installBtn.addEventListener('click', triggerInstall);
 
   installDismiss && installDismiss.addEventListener('click', () => {
@@ -3464,7 +4188,7 @@
 
   window.addEventListener('appinstalled', () => {
     installBanner.classList.remove('show');
-    installNavBtn.style.display = 'none';
+    installMenuItem.style.display = 'none';
   });
 })();
 
