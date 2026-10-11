@@ -1,4 +1,4 @@
-const CACHE_NAME = "momentum-cache-v13";
+const CACHE_NAME = "momentum-cache-v19";
 const ASSETS = [
   "./",
   "./index.html",
