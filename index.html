@@ -1437,6 +1437,28 @@
   .pv-meta { font-size: 11.5px; color: var(--text-dim); white-space: nowrap; }
   .pv-how { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin: 8px 0 0 30px; }
 
+  /* --- Log vs PR, tap targets, goal programs --- */
+  .card { cursor: pointer; }
+  .card-log { font-size: 11.5px; color: var(--text-dim); margin-top: 2px; }
+  .hist-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.07em; margin-left: 8px; color: var(--accent); }
+  .hist-tag.log { color: var(--text-dim); }
+  .program-card { display: flex; align-items: center; gap: 12px; }
+  .program-card-text { flex: 1; min-width: 0; }
+  .program-select-btn {
+    background: none; border: 1px solid var(--border); color: var(--text-dim);
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+    border-radius: 9px; padding: 8px 12px; cursor: pointer; white-space: nowrap; font-family: inherit;
+  }
+  .program-card.selected .program-select-btn { border-color: rgba(14,15,18,0.55); color: #0e0f12; }
+  :root[data-theme="light"] .program-card.selected .program-select-btn { border-color: rgba(255,255,255,0.8); color: #ffffff; }
+  .plan-note { font-size: 12.5px; color: var(--text-dim); line-height: 1.5; margin: 4px 0 12px; }
+  .plan-table { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 12px; margin-bottom: 14px; }
+  .plan-row { display: grid; grid-template-columns: 54px repeat(var(--cols), 1fr); gap: 6px; padding: 8px 0; border-top: 1px solid var(--border); font-size: 13px; font-variant-numeric: tabular-nums; align-items: baseline; }
+  .plan-row:first-child { border-top: none; }
+  .plan-row.head { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); }
+  .plan-row .wk { color: var(--text-dim); }
+  .plan-tag { grid-column: 1 / -1; font-size: 11px; font-weight: 700; color: var(--accent); margin-top: -2px; }
+
   /* --- Stretch player --- */
   #stretchPlayer {
     position: fixed; inset: 0; z-index: 72; background: var(--bg);
@@ -2228,7 +2250,7 @@
   </div>
 
   <div id="programsListView">
-    <p class="program-hint">Press and hold a program for half a second to select it.</p>
+    <p class="program-hint">Tap Select to use a program. Tap the program itself to see its days.</p>
     <div id="programSelectedWrap" style="display:none;">
       <p class="muscle-section-label">Selected program</p>
       <div id="programSelectedList"></div>
@@ -2241,6 +2263,7 @@
     <div id="programEmptyState" class="empty-state" style="display:none;">You haven't created any programs yet.</div>
 
     <button type="button" id="createProgramBtn" class="save-btn">Create Program</button>
+    <button type="button" id="goalProgramBtn" class="st-btn" style="width:100%; margin-top:10px; padding:15px;">Goal Program</button>
   </div>
 
   <div id="programDetailView" style="display:none;">
@@ -2248,7 +2271,55 @@
     <h2 id="programDetailTitle" class="program-detail-title"></h2>
     <p id="programDetailSub" class="progress-sub" style="padding:0; margin: 0 0 16px;"></p>
     <div id="programDayList"></div>
+    <div id="programPlanWrap"></div>
     <button type="button" id="deleteProgramBtn" class="explain-btn" style="display:none; color: var(--danger); margin-top: 10px;">Delete this program</button>
+  </div>
+
+
+  <div id="programGoalView" style="display:none;">
+    <button type="button" id="goalProgBack" class="explain-btn" style="margin-bottom:14px;">← Cancel</button>
+    <h2 class="program-detail-title">Goal Program</h2>
+    <p class="st-note" style="margin-top:0;">Pick one lift, say what you can lift now and what you are aiming for. You get a training plan built around that lift.</p>
+
+    <p class="runs-label">Exercise</p>
+    <select class="runs-sel" id="gpExercise"></select>
+
+    <p class="runs-label">What you can lift now</p>
+    <div class="runs-time-row">
+      <input class="runs-input" id="gpCurW" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Weight">
+      <input class="runs-input" id="gpCurR" type="number" inputmode="numeric" min="1" step="1" placeholder="Reps">
+    </div>
+
+    <p class="runs-label">Your goal</p>
+    <div class="runs-time-row">
+      <input class="runs-input" id="gpTgtW" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Weight">
+      <input class="runs-input" id="gpTgtR" type="number" inputmode="numeric" min="1" step="1" placeholder="Reps" value="1">
+    </div>
+    <p class="st-note" style="margin-top:-6px;">Weights are in <span class="wu">kg</span>. Use 1 rep for a one-rep max goal.</p>
+
+    <p class="runs-label">Training type</p>
+    <select class="runs-sel" id="gpType">
+      <option value="endurance">Endurance (15-25 reps)</option>
+      <option value="growth">Muscle growth (8-12 reps)</option>
+      <option value="strength" selected>Strength (3-5 reps)</option>
+    </select>
+
+    <p class="runs-label">Experience</p>
+    <select class="runs-sel" id="gpLevel">
+      <option value="advanced">Advanced (3+ years)</option>
+      <option value="beginner">Beginner (under 1 year)</option>
+      <option value="intermediate" selected>Intermediate (1-3 years)</option>
+    </select>
+
+    <p class="runs-label">Days per week</p>
+    <select class="runs-sel" id="gpDays">
+      <option value="2">2 days</option>
+      <option value="3" selected>3 days</option>
+      <option value="4">4 days</option>
+    </select>
+
+    <p class="runs-msg err" id="gpErr"></p>
+    <button type="button" class="runs-log-btn" id="gpGenerate">Generate Program</button>
   </div>
 
   <div id="programEditView" style="display:none;">
@@ -3309,8 +3380,15 @@
       });
   }
 
+  function lastLogHtml(ex) {
+    const logs = (ex.history || []).filter(h => h.type === 'log');
+    if (!logs.length) return '';
+    const l = logs.reduce((a, b) => new Date(b.date) > new Date(a.date) ? b : a);
+    return `<div class="card-log">Last log: ${wDisp(l.weight)} ${weightUnit} × ${l.reps} · ${formatDate(l.date)}</div>`;
+  }
+
   function renderGroupExercises() {
-    homeHint.textContent = 'Tap and hold an exercise to log a PR';
+    homeHint.textContent = 'Tap an exercise to log a PR or a set';
     const headerRow = document.createElement('div');
     headerRow.className = 'group-header-row';
     headerRow.innerHTML = `
@@ -3342,10 +3420,10 @@
             <span><b>${ex.reps}</b> reps</span>
           </div>
           ${ex.comment ? `<div class="card-comment">${escapeHtml(ex.comment)}</div>` : ''}
-          <div class="card-date">Last PR: ${formatDate(ex.lastEdited)}</div>
+          <div class="card-date">Last PR: ${formatDate(ex.lastEdited)}</div>${lastLogHtml(ex)}
         </div>
       `;
-      attachLongPress(card, () => openEdit(ex.id));
+      card.addEventListener('click', () => openEdit(ex.id));
       list.appendChild(card);
     });
   }
@@ -3432,6 +3510,12 @@
     modePrBtn.classList.toggle('active', mode === 'pr');
     modeLogBtn.classList.toggle('active', mode === 'log');
     saveBtn.textContent = mode === 'log' ? 'Log Set' : 'Save Exercise';
+    const exNow = editingId !== null ? exercises.find(e => e.id === editingId) : null;
+    if (exNow) {
+      prNote.innerHTML = mode === 'log'
+        ? `Log a set to track your progress. It is saved as a log and does not change your PR.<br>Current PR: ${wDisp(exNow.weight)} ${weightUnit} × ${exNow.reps} · ${formatDate(exNow.lastEdited)}`
+        : `Log a new PR. <b>Name</b>, <b>weight</b> and <b>reps</b> can be changed — date is saved automatically.<br>Previous PR: ${formatDate(exNow.lastEdited)}`;
+    }
   }
 
   function openNew() {
@@ -3581,15 +3665,15 @@
     if (!ex) return;
     progressTitle.textContent = `Progress · ${ex.name}`;
     const history = (ex.history || []).slice().sort((a, b) => new Date(a.date) - new Date(b.date));
-    if (history.length < 2) {
+    if (history.length < 1) {
       progressChartWrap.style.display = 'none';
       progressEmptyState.style.display = 'block';
       progressEmptyState.textContent = 'No history logged yet for this exercise.';
-      progressSub.textContent = history.length === 1 ? 'Only one entry logged so far — log more sets or PRs to see a trend.' : '';
+      progressSub.textContent = '';
     } else {
       progressEmptyState.style.display = 'none';
       progressChartWrap.style.display = 'block';
-      progressSub.textContent = `${history.length} entries · weight and reps over time`;
+      progressSub.textContent = `${history.length} ${history.length === 1 ? 'set' : 'sets'} · weight at each rep count`;
       drawProgressChart(history);
     }
     renderHistoryList(ex);
@@ -3648,7 +3732,7 @@
     const canDelete = rows.length > 1;
     historyList.innerHTML = '<p class="history-head">Logged sets</p>' + rows.map(r =>
       `<div class="history-row"><div class="history-info">
-        <div class="history-main">${escapeHtml(wDisp(r.h.weight))} ${weightUnit} × ${escapeHtml(String(r.h.reps))}</div>
+        <div class="history-main">${escapeHtml(wDisp(r.h.weight))} ${weightUnit} × ${escapeHtml(String(r.h.reps))}${r.h.type ? `<span class="hist-tag ${r.h.type === 'log' ? 'log' : ''}">${r.h.type === 'log' ? 'LOG' : 'PR'}</span>` : ''}</div>
         <div class="history-date">${formatDate(r.h.date)}</div></div>
         ${canDelete ? `<button type="button" class="history-del" data-i="${r.i}">Delete</button>` : ''}
       </div>`).join('');
@@ -3666,8 +3750,9 @@
     if (!ex || !ex.history || ex.history.length < 2) return;
     const removed = ex.history.splice(idx, 1)[0];
     // If the removed set was the headline PR, fall back to the best remaining set
-    if (removed && Number(removed.weight) === Number(ex.weight) && Number(removed.reps) === Number(ex.reps)) {
-      const best = ex.history.slice().sort((a, b) =>
+    if (removed && removed.type !== 'log' && Number(removed.weight) === Number(ex.weight) && Number(removed.reps) === Number(ex.reps)) {
+      const prs = ex.history.filter(h => h.type !== 'log');
+      const best = (prs.length ? prs : ex.history).slice().sort((a, b) =>
         (b.weight - a.weight) || (b.reps - a.reps) || (new Date(b.date) - new Date(a.date)))[0];
       ex.weight = best.weight; ex.reps = best.reps; ex.lastEdited = best.date;
       fieldWeight.value = wDisp(ex.weight); fieldReps.value = ex.reps;
@@ -3688,49 +3773,52 @@
   progressOverlay.addEventListener('click', closeProgress);
 
   function drawProgressChart(history) {
-    // Two lines on separate scales, since weight and reps often trade off against
-    // each other (more reps at the same weight, or more weight at fewer reps).
-    const weights = history.map(h => toDispNum(h.weight));
-    const reps = history.map(h => parseFloat(h.reps) || 0);
+    // One line: your best weight at each rep count. Weight runs up the side from the lightest
+    // to the heaviest weight you have entered, reps run along the bottom (1-15, or further if
+    // you have entered more than 15 reps).
+    const pts = history
+      .map(h => ({ w: toDispNum(h.weight), r: parseInt(h.reps, 10), log: h.type === 'log' }))
+      .filter(p => p.w > 0 && p.r >= 1);
+    if (!pts.length) {
+      progressChartWrap.innerHTML = '<div class="empty-state" style="padding:30px 0;">No sets to show yet.</div>';
+      return;
+    }
+    const minW = Math.min(...pts.map(p => p.w)), maxW = Math.max(...pts.map(p => p.w));
+    const maxX = Math.max(15, ...pts.map(p => p.r));
+    const W = 380, H = 220, padL = 46, padR = 16, padT = 14, padB = 32;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const xFor = r => padL + ((r - 1) / (maxX - 1)) * plotW;
+    const flat = maxW === minW;
+    const yFor = w => flat ? padT + plotH / 2 : padT + plotH - ((w - minW) / (maxW - minW)) * plotH;
+    const fmt = n => String(parseFloat(n.toFixed(1)));
+    const dim = 'var(--text-dim)';
 
-    const minW = Math.min(...weights), maxW = Math.max(...weights);
-    const rangeW = (maxW - minW) || 1;
-    const minR = Math.min(...reps), maxR = Math.max(...reps);
-    const rangeR = (maxR - minR) || 1;
+    // horizontal grid with weight labels: lightest, heaviest and two steps between
+    const ticks = flat ? [minW] : [0, 1, 2, 3].map(i => minW + ((maxW - minW) * i) / 3);
+    const grid = ticks.map(t => `<line x1="${padL}" y1="${yFor(t).toFixed(1)}" x2="${W - padR}" y2="${yFor(t).toFixed(1)}" stroke="var(--border)" stroke-width="1"/>
+      <text x="${padL - 7}" y="${(yFor(t) + 3.5).toFixed(1)}" text-anchor="end" font-size="10" fill="${dim}">${fmt(t)}</text>`).join('');
 
-    const W = 380, H = 190, padL = 34, padR = 34, padT = 14, padB = 26;
-    const plotW = W - padL - padR;
-    const plotH = H - padT - padB;
+    const step = maxX > 20 ? Math.ceil(maxX / 15) : 1;
+    let xl = '';
+    for (let r = 1; r <= maxX; r += step) {
+      xl += `<text x="${xFor(r).toFixed(1)}" y="${H - 12}" text-anchor="middle" font-size="10" fill="${dim}">${r}</text>`;
+    }
 
-    const xFor = (i) => padL + (history.length === 1 ? plotW / 2 : (i / (history.length - 1)) * plotW);
-    const weightPts = weights.map((w, i) => [xFor(i), padT + plotH - ((w - minW) / rangeW) * plotH]);
-    const repPts = reps.map((r, i) => [xFor(i), padT + plotH - ((r - minR) / rangeR) * plotH]);
-
-    const weightColor = 'var(--accent)';
-    const repColor = '#ff8a5b';
-
-    const pathFor = (pts) => pts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
-    const weightLine = `<path d="${pathFor(weightPts)}" fill="none" stroke="${weightColor}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />`;
-    const repLine = `<path d="${pathFor(repPts)}" fill="none" stroke="${repColor}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="5,4" />`;
-    const weightDots = weightPts.map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.2" fill="${weightColor}" />`).join('');
-    const repDots = repPts.map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.2" fill="${repColor}" />`).join('');
-
-    const wTop = `<text x="${padL - 6}" y="${padT + 4}" text-anchor="end" font-size="10" fill="${weightColor}">${Math.round(maxW)}</text>`;
-    const wBot = `<text x="${padL - 6}" y="${padT + plotH}" text-anchor="end" font-size="10" fill="${weightColor}">${Math.round(minW)}</text>`;
-    const rTop = `<text x="${W - padR + 6}" y="${padT + 4}" text-anchor="start" font-size="10" fill="${repColor}">${Math.round(maxR)}</text>`;
-    const rBot = `<text x="${W - padR + 6}" y="${padT + plotH}" text-anchor="start" font-size="10" fill="${repColor}">${Math.round(minR)}</text>`;
-
-    const xFirst = `<text x="${padL}" y="${H - 6}" text-anchor="start" font-size="10" fill="var(--text-dim)">${formatShortDate(history[0].date)}</text>`;
-    const xLast = `<text x="${W - padR}" y="${H - 6}" text-anchor="end" font-size="10" fill="var(--text-dim)">${formatShortDate(history[history.length - 1].date)}</text>`;
+    // the line follows the best weight at each rep count
+    const best = {};
+    pts.forEach(p => { if (!best[p.r] || p.w > best[p.r]) best[p.r] = p.w; });
+    const line = Object.keys(best).map(Number).sort((a, b) => a - b).map(r => [xFor(r), yFor(best[r])]);
+    const path = line.length > 1
+      ? `<path d="${line.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ')}" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>` : '';
+    const dots = pts.map(p => p.log
+      ? `<circle cx="${xFor(p.r).toFixed(1)}" cy="${yFor(p.w).toFixed(1)}" r="3.6" fill="var(--bg-elevated)" stroke="var(--accent)" stroke-width="2"/>`
+      : `<circle cx="${xFor(p.r).toFixed(1)}" cy="${yFor(p.w).toFixed(1)}" r="3.6" fill="var(--accent)"/>`).join('');
 
     progressChartWrap.innerHTML = `
-      <div class="chart-legend">
-        <span class="legend-dot" style="background:${weightColor}"></span> Weight (${weightUnit})
-        <span class="legend-dot" style="background:${repColor}; margin-left:14px;"></span> Reps
-      </div>
+      <div class="chart-legend">Weight (${weightUnit}) by reps &nbsp;·&nbsp; filled = PR, hollow = log</div>
       <svg viewBox="0 0 ${W} ${H}" style="width:100%; height:auto; display:block;">
-        ${weightLine}${repLine}${weightDots}${repDots}
-        ${wTop}${wBot}${rTop}${rBot}${xFirst}${xLast}
+        ${grid}${path}${dots}${xl}
+        <text x="${(padL + plotW / 2).toFixed(1)}" y="${H - 1}" text-anchor="middle" font-size="9.5" fill="${dim}" letter-spacing="1">REPS</text>
       </svg>
     `;
   }
@@ -3765,14 +3853,14 @@
         image: currentImage,
         lastEdited: nowIso,
         category,
-        history: [{ date: nowIso, weight, reps }]
+        history: [{ date: nowIso, weight, reps, type: 'pr' }]
       });
     } else {
       const ex = exercises.find(e => e.id === editingId);
       if (ex) {
         ex.category = category;
-        if (!ex.history) ex.history = [{ date: ex.lastEdited, weight: ex.weight, reps: ex.reps }];
-        ex.history.push({ date: nowIso, weight, reps });
+        if (!ex.history) ex.history = [{ date: ex.lastEdited, weight: ex.weight, reps: ex.reps, type: 'pr' }];
+        ex.history.push({ date: nowIso, weight, reps, type: logMode === 'log' ? 'log' : 'pr' });
 
         if (logMode === 'pr') {
           ex.name = name;
@@ -3780,13 +3868,8 @@
           ex.weight = weight;
           ex.lastEdited = nowIso;
         } else {
-          // Log Set mode: only update the headline PR if this set actually beats it
+          // Log Set mode: the set goes into the history as a log and never changes the PR
           ex.name = name;
-          if (parseFloat(weight) >= parseFloat(ex.weight)) {
-            ex.reps = reps;
-            ex.weight = weight;
-            ex.lastEdited = nowIso;
-          }
         }
       }
     }
@@ -4968,7 +5051,7 @@
   // Programs has its own sub-views (list / detail / edit). The back arrow should
   // step up one level within Programs before exiting to the main page.
   backFromPrograms.addEventListener('click', () => {
-    const inSubView = programDetailView.style.display !== 'none' || programEditView.style.display !== 'none';
+    const inSubView = programDetailView.style.display !== 'none' || programEditView.style.display !== 'none' || programGoalView.style.display !== 'none';
     if (inSubView) {
       showProgramsList();
     } else {
@@ -4996,7 +5079,7 @@
     }
     if (sheet.classList.contains('show')) { closeSheet(); return true; }
     if (programsPage.classList.contains('show')) {
-      const inSubView = programDetailView.style.display !== 'none' || programEditView.style.display !== 'none';
+      const inSubView = programDetailView.style.display !== 'none' || programEditView.style.display !== 'none' || programGoalView.style.display !== 'none';
       if (inSubView) showProgramsList(); else switchPage('main');
       return true;
     }
@@ -5528,6 +5611,7 @@
     programsListView.style.display = 'block';
     programDetailView.style.display = 'none';
     programEditView.style.display = 'none';
+    programGoalView.style.display = 'none';
     renderProgramLists();
   }
 
@@ -5555,17 +5639,16 @@
     const card = document.createElement('div');
     card.className = 'program-card' + (p.id === selectedProgramId ? ' selected' : '');
     const sub = isCustom
-      ? `${p.days.length} day${p.days.length === 1 ? '' : 's'} · your own program`
+      ? (p.plan ? p.description : `${p.days.length} day${p.days.length === 1 ? '' : 's'} · your own program`)
       : p.description;
-    card.innerHTML = `<div class="program-card-name">${escapeHtml(p.name)}</div><div class="program-card-sub">${escapeHtml(sub)}</div>`;
-    card.addEventListener('click', () => {
-      if (Date.now() - lastProgramLongPress < 700) return; // the click that follows a long press
-      showProgramDetail(p, isCustom);
-    });
-    attachLongPress(card, () => {
-      lastProgramLongPress = Date.now();
+    const on = p.id === selectedProgramId;
+    card.innerHTML = `<div class="program-card-text"><div class="program-card-name">${escapeHtml(p.name)}</div><div class="program-card-sub">${escapeHtml(sub)}</div></div>
+      <button type="button" class="program-select-btn">${on ? 'Deselect' : 'Select'}</button>`;
+    card.addEventListener('click', () => showProgramDetail(p, isCustom));
+    card.querySelector('.program-select-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
       setSelectedProgram(p.id);
-    }, 500);
+    });
     return card;
   }
 
@@ -5603,6 +5686,7 @@
     programsListView.style.display = 'none';
     programDetailView.style.display = 'block';
     programEditView.style.display = 'none';
+    programGoalView.style.display = 'none';
     programDetailTitle.textContent = program.name;
     programDetailSub.textContent = program.description || `${program.days.length} day${program.days.length === 1 ? '' : 's'}`;
     programDayList.innerHTML = program.days.map(day => `
@@ -5611,6 +5695,7 @@
         ${day.exercises.map(ex => `<div class="program-day-exercise">${escapeHtml(ex)}</div>`).join('')}
       </div>
     `).join('');
+    renderProgramPlan(program);
     deleteProgramBtn.style.display = isCustom ? 'block' : 'none';
     deleteProgramBtn.onclick = () => {
       customPrograms = customPrograms.filter(p => p.id !== program.id);
@@ -5620,6 +5705,197 @@
   }
 
   programDetailBack.addEventListener('click', showProgramsList);
+
+
+  // =================================================================================
+  // Goal program generator
+  // =================================================================================
+  const programGoalView = document.getElementById('programGoalView');
+  const GP_PREF = {
+    'Abs': ['Hanging Leg Raise', 'Cable Crunch', 'Ab Wheel Rollout', 'Russian Twist', 'Plank'],
+    'Back': ['Barbell Row', 'Lat Pulldown', 'Seated Cable Row', 'Dumbbell Row', 'Chest-Supported Row', 'Pull-Ups', 'Straight-Arm Pulldown'],
+    'Biceps': ['Barbell Curl', 'Hammer Curl', 'Incline Dumbbell Curl', 'Preacher Curl', 'Cable Curl'],
+    'Calves': ['Standing Calf Raise', 'Seated Calf Raise', 'Leg Press Calf Raise', 'Single-Leg Calf Raise'],
+    'Chest': ['Incline Dumbbell Press', 'Dumbbell Bench Press', 'Cable Crossover', 'Dumbbell Fly', 'Push-ups', 'Machine Fly'],
+    'Full Body': ['Push Press', "Farmer's Carry", 'Power Clean'],
+    'Glutes': ['Hip Thrust', 'Glute Bridge', 'Single-Leg Hip Thrust', 'Cable Kickback'],
+    'Hamstrings': ['Romanian Deadlift', 'Seated Leg Curl', 'Lying Leg Curl', 'Good Morning', 'Nordic Hamstring Curl'],
+    'Lower Back': ['Back Extension', 'Reverse Hyperextension', 'Bird Dog'],
+    'Quads': ['Leg Press', 'Bulgarian Split Squat', 'Leg Extension', 'Front Squat', 'Hack Squat', 'Lunges', 'Goblet Squat'],
+    'Shoulders': ['Overhead Press', 'Lateral Raise', 'Face Pull', 'Reverse Fly', 'Dumbbell Shoulder Press', 'Front Raise'],
+    'Traps': ['Barbell Shrug', 'Dumbbell Shrug', 'Rack Pull'],
+    'Triceps': ['Cable Triceps Pushdown', 'Skull Crusher', 'Close-Grip Bench Press', 'Overhead Triceps Extension', 'Dips']
+  };
+  const GP_SUPPORT = {
+    'Abs': ['Lower Back'], 'Back': ['Biceps', 'Shoulders'], 'Biceps': ['Back', 'Triceps'], 'Calves': ['Quads'],
+    'Chest': ['Triceps', 'Shoulders'], 'Full Body': ['Quads', 'Back', 'Chest'], 'Glutes': ['Hamstrings', 'Quads'],
+    'Hamstrings': ['Glutes', 'Lower Back'], 'Lower Back': ['Glutes', 'Hamstrings'], 'Quads': ['Hamstrings', 'Glutes'],
+    'Shoulders': ['Triceps', 'Traps'], 'Traps': ['Shoulders', 'Back'], 'Triceps': ['Chest', 'Shoulders']
+  };
+  const GP_TYPES = {
+    strength: { name: 'Strength', sessions: [{ label: 'Heavy', sets: 5, reps: 3, scale: 1 }, { label: 'Medium', sets: 4, reps: 5, scale: 1 }, { label: 'Light', sets: 3, reps: 5, scale: 0.9 }], acc: { sets: 3, reps: '6-8' } },
+    growth: { name: 'Muscle growth', sessions: [{ label: 'Heavy', sets: 4, reps: 8, scale: 1 }, { label: 'Medium', sets: 3, reps: 10, scale: 1 }, { label: 'Light', sets: 3, reps: 12, scale: 1 }], acc: { sets: 3, reps: '10-12' } },
+    endurance: { name: 'Endurance', sessions: [{ label: 'Heavy', sets: 3, reps: 15, scale: 1 }, { label: 'Medium', sets: 3, reps: 20, scale: 1 }, { label: 'Light', sets: 2, reps: 25, scale: 1 }], acc: { sets: 3, reps: '15-20' } }
+  };
+  const GP_LEVELS = { beginner: { name: 'Beginner', monthly: 0.05 }, intermediate: { name: 'Intermediate', monthly: 0.02 }, advanced: { name: 'Advanced', monthly: 0.008 } };
+  const GP_SKIP = ['Plank', 'Side Plank', 'Hollow Body Hold', 'Wall Sit', 'Mountain Climbers', 'Burpee', 'Jump Rope', 'Flutter Kicks', 'Bird Dog', 'Superman', 'Clamshell', 'Fire Hydrant', 'Dead Bug', 'Bicycle Crunch', 'Turkish Get-Up'];
+
+  function gpFillExercises() {
+    const byCat = {};
+    EXERCISE_LIBRARY.forEach(e => { if (!GP_SKIP.includes(e.name)) (byCat[e.category] = byCat[e.category] || []).push(e.name); });
+    const libNames = new Set(EXERCISE_LIBRARY.map(e => e.name.toLowerCase()));
+    const mine = exercises.filter(e => !libNames.has(e.name.toLowerCase())).map(e => e.name);
+    let html = '<option value="">Select exercise</option>';
+    Object.keys(byCat).sort((a, b) => a.localeCompare(b, 'en')).forEach(c => {
+      html += `<optgroup label="${escapeHtml(c)}">` + byCat[c].sort((a, b) => a.localeCompare(b, 'en')).map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('') + '</optgroup>';
+    });
+    if (mine.length) html += '<optgroup label="Your exercises">' + [...new Set(mine)].sort((a, b) => a.localeCompare(b, 'en')).map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('') + '</optgroup>';
+    document.getElementById('gpExercise').innerHTML = html;
+  }
+  document.getElementById('gpExercise').addEventListener('change', () => {
+    // Pre-fill what you can lift now from your own logged exercise, if there is one
+    const name = document.getElementById('gpExercise').value.toLowerCase();
+    const mine = exercises.find(e => e.name.toLowerCase() === name);
+    if (mine) {
+      document.getElementById('gpCurW').value = wDisp(mine.weight);
+      document.getElementById('gpCurR').value = mine.reps;
+    }
+  });
+  function showGoalProgram() {
+    programsListView.style.display = 'none';
+    programDetailView.style.display = 'none';
+    programEditView.style.display = 'none';
+    programGoalView.style.display = 'block';
+    gpFillExercises();
+    ['gpCurW', 'gpCurR', 'gpTgtW'].forEach(id => { document.getElementById(id).value = ''; });
+    document.getElementById('gpTgtR').value = '1';
+    document.getElementById('gpErr').textContent = '';
+    applyUnitLabels();
+    window.scrollTo(0, 0);
+  }
+  document.getElementById('goalProgramBtn').addEventListener('click', showGoalProgram);
+  document.getElementById('goalProgBack').addEventListener('click', showProgramsList);
+
+  function gpRoundLoad(kg) {
+    if (weightUnit === 'lb') return Math.max(5, Math.round(kg * LB_PER_KG / 5) * 5) / LB_PER_KG;
+    return Math.max(2.5, Math.round(kg / 2.5) * 2.5);
+  }
+  const gpE1rm = (kg, reps) => reps <= 1 ? kg : kg * (1 + reps / 30);
+  const gpLoad = (E, reps, scale) => (E / (1 + (reps + 2) / 30)) * scale;   // stop about 2 reps short of failure
+
+  function gpPick(cat, exclude, start, count) {
+    const list = (GP_PREF[cat] || []).filter(n => n.toLowerCase() !== exclude.toLowerCase() && !exclude.toLowerCase().includes(n.toLowerCase()));
+    const out = [];
+    for (let i = 0; i < list.length && out.length < count; i++) out.push(list[(start + i) % list.length]);
+    return out;
+  }
+  function gpBuild(opts) {
+    const type = GP_TYPES[opts.type], level = GP_LEVELS[opts.level];
+    const Ec = gpE1rm(opts.curKg, opts.curReps), Et = gpE1rm(opts.tgtKg, opts.tgtReps);
+    const gw = Math.pow(1 + level.monthly, 1 / 4.345) - 1;
+    const weeksNeeded = Math.ceil(Math.log(Et / Ec) / Math.log(1 + gw)) + 1;
+    let W = Math.max(4, weeksNeeded), capped = false, Eend = Et;
+    if (W > 24) { W = 24; capped = true; Eend = Ec * Math.pow(1 + gw, 23 - Math.floor(23 / 4)); }
+    const isDeload = n => n % 4 === 0 && n < W;
+    const K = Array.from({ length: W }, (_, i) => i + 1).filter(n => !isDeload(n)).length;
+    const mainSessions = opts.days === 2 ? 2 : 3;
+    const sessions = type.sessions.slice(0, mainSessions);
+    const weeks = [];
+    let k = 0, lastE = Ec;
+    for (let n = 1; n <= W; n++) {
+      let E, note = '';
+      if (isDeload(n)) { E = lastE * 0.9; note = 'Deload week'; }
+      else {
+        E = K > 1 ? Ec * Math.pow(Eend / Ec, k / (K - 1)) : Ec;
+        lastE = E; k++;
+      }
+      if (n === W) note = capped ? 'End of phase 1' : 'Goal attempt';
+      weeks.push({ n, note, loads: sessions.map(s => gpRoundLoad(gpLoad(E, s.reps, s.scale))) });
+    }
+    // Training days: the main lift, plus accessories for the same muscle group and its helpers
+    const cat = opts.category, support = GP_SUPPORT[cat] || [];
+    const days = [];
+    const nDays = opts.days;
+    for (let d = 0; d < nDays; d++) {
+      if (d < mainSessions) {
+        const s = sessions[d];
+        const ex = [`${opts.exercise} · ${s.sets} × ${s.reps} (${s.label.toLowerCase()})`];
+        gpPick(cat, opts.exercise, d * 2, 2).forEach(n => ex.push(`${n} · ${type.acc.sets} × ${type.acc.reps}`));
+        support.slice(0, 2).forEach((sc, i) => gpPick(sc, opts.exercise, d + i, 1).forEach(n => ex.push(`${n} · ${type.acc.sets} × ${type.acc.reps}`)));
+        days.push({ name: `Day ${d + 1} · ${s.label}`, exercises: ex });
+      } else {
+        const ex = [];
+        gpPick(cat, opts.exercise, 4, 2).forEach(n => ex.push(`${n} · ${type.acc.sets} × ${type.acc.reps}`));
+        support.slice(0, 2).forEach((sc, i) => gpPick(sc, opts.exercise, 2 + i, 2).forEach(n => ex.push(`${n} · ${type.acc.sets} × ${type.acc.reps}`)));
+        days.push({ name: `Day ${d + 1} · Support`, exercises: ex });
+      }
+    }
+    const summaryGoal = `${opts.exercise} ${wDisp(opts.tgtKg)} ${weightUnit}${opts.tgtReps > 1 ? ' × ' + opts.tgtReps : ''}`;
+    return {
+      days,
+      plan: {
+        exercise: opts.exercise, type: opts.type, level: opts.level, daysPerWeek: nDays,
+        currentKg: opts.curKg, currentReps: opts.curReps, targetKg: opts.tgtKg, targetReps: opts.tgtReps,
+        sessions: sessions.map(s => ({ label: s.label, sets: s.sets, reps: s.reps })),
+        weeks, capped, weeksNeeded, tgtLabel: summaryGoal
+      }
+    };
+  }
+  document.getElementById('gpGenerate').addEventListener('click', () => {
+    const err = m => { document.getElementById('gpErr').textContent = m; };
+    const exercise = document.getElementById('gpExercise').value;
+    if (!exercise) return err('Pick an exercise.');
+    const num = id => parseFloat(String(document.getElementById(id).value).replace(',', '.'));
+    const curW = num('gpCurW'), curR = Math.round(num('gpCurR')), tgtW = num('gpTgtW'), tgtR = Math.round(num('gpTgtR'));
+    if (!(curW > 0) || !(curR > 0)) return err('Enter what you can lift now: weight and reps.');
+    if (!(tgtW > 0) || !(tgtR > 0)) return err('Enter your goal: weight and reps.');
+    const curKg = parseFloat(toKgStr(curW)), tgtKg = parseFloat(toKgStr(tgtW));
+    if (curR > 20 || tgtR > 20) return err('Use a set of 20 reps or fewer for these numbers.');
+    if (gpE1rm(tgtKg, tgtR) <= gpE1rm(curKg, curR) * 1.01) return err('Your goal needs to be higher than what you can lift now.');
+    {
+      const lvl = GP_LEVELS[document.getElementById('gpLevel').value];
+      const gw = Math.pow(1 + lvl.monthly, 1 / 4.345) - 1;
+      const wk = Math.ceil(Math.log(gpE1rm(tgtKg, tgtR) / gpE1rm(curKg, curR)) / Math.log(1 + gw)) + 1;
+      if (wk > 156) return err(`At a realistic pace this goal is about ${(wk / 52).toFixed(1)} years away. Set a closer goal first and aim higher once you get there.`);
+    }
+    const lib = EXERCISE_LIBRARY.find(e => e.name.toLowerCase() === exercise.toLowerCase());
+    const mine = exercises.find(e => e.name.toLowerCase() === exercise.toLowerCase());
+    const category = lib ? lib.category : (mine ? mine.category : OTHER_CATEGORY);
+    err('');
+    const built = gpBuild({
+      exercise, category, curKg, curReps: curR, tgtKg, tgtReps: tgtR,
+      type: document.getElementById('gpType').value, level: document.getElementById('gpLevel').value,
+      days: parseInt(document.getElementById('gpDays').value, 10)
+    });
+    const t = GP_TYPES[document.getElementById('gpType').value];
+    const prog = {
+      id: 'g' + Date.now(),
+      name: `Goal: ${built.plan.tgtLabel}`,
+      description: `${t.name} · ${built.plan.daysPerWeek} days per week · ${built.plan.capped ? 'first 24 weeks' : built.plan.weeks.length + ' weeks'}`,
+      days: built.days,
+      plan: built.plan
+    };
+    customPrograms.unshift(prog);
+    saveCustomProgramsToStorage();
+    showProgramDetail(prog, true);
+  });
+
+  function renderProgramPlan(program) {
+    const wrap = document.getElementById('programPlanWrap');
+    if (!program.plan) { wrap.innerHTML = ''; return; }
+    const p = program.plan, cols = p.sessions.length;
+    const cur = `${wDisp(p.currentKg)} ${weightUnit} × ${p.currentReps}`;
+    let note = `Starting point ${cur}. Loads are worked out from your estimated one-rep max (Epley formula) and rise week by week. Every fourth week is a lighter deload week. Sets stop about 2 reps short of failure, so adjust the weight if it feels too easy or too heavy.`;
+    if (p.capped) note += ` At a realistic pace your goal is about ${p.weeksNeeded} weeks away, so this plan covers the first 24 weeks. Make a new plan when it ends.`;
+    else note += ` Expected time to goal: about ${p.weeksNeeded} weeks.`;
+    let html = `<p class="runs-label" style="margin-top:18px;">Week by week · ${escapeHtml(p.exercise)}</p><p class="plan-note">${escapeHtml(note)}</p><div class="plan-table" style="--cols:${cols}">`;
+    html += `<div class="plan-row head"><span>Week</span>${p.sessions.map(s => `<span>${s.label} ${s.sets}×${s.reps}</span>`).join('')}</div>`;
+    p.weeks.forEach(w => {
+      html += `<div class="plan-row"><span class="wk">${w.n}</span>${w.loads.map(kg => `<span>${wDisp(kg)} ${weightUnit}</span>`).join('')}${w.note ? `<span class="plan-tag">${escapeHtml(w.note)}${w.note === 'Goal attempt' ? ': ' + wDisp(p.targetKg) + ' ' + weightUnit + ' × ' + p.targetReps : ''}</span>` : ''}</div>`;
+    });
+    html += '</div>';
+    wrap.innerHTML = html;
+  }
 
   let programEditDays = [];
 
@@ -5686,6 +5962,7 @@
   function showProgramEdit() {
     programsListView.style.display = 'none';
     programDetailView.style.display = 'none';
+    programGoalView.style.display = 'none';
     programEditView.style.display = 'block';
     programNameInput.value = '';
     programEditError.textContent = '';
