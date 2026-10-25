@@ -1458,6 +1458,11 @@
   .plan-row.head { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); }
   .plan-row .wk { color: var(--text-dim); }
   .plan-tag { grid-column: 1 / -1; font-size: 11px; font-weight: 700; color: var(--accent); margin-top: -2px; }
+  .gp-auto { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .gp-info { font-size: 12.5px; font-weight: 400; color: var(--text-dim); line-height: 1.5; margin-top: 8px; }
+  .gp-hint { font-size: 12px; color: var(--accent); margin: 6px 0 0; font-weight: 600; }
+  .plan-how { margin: 0 0 14px; padding-left: 18px; font-size: 13px; line-height: 1.55; color: var(--text); }
+  .plan-how li { margin-bottom: 6px; }
 
   /* --- Stretch player --- */
   #stretchPlayer {
@@ -2279,7 +2284,10 @@
   <div id="programGoalView" style="display:none;">
     <button type="button" id="goalProgBack" class="explain-btn" style="margin-bottom:14px;">← Cancel</button>
     <h2 class="program-detail-title">Goal Program</h2>
-    <p class="st-note" style="margin-top:0;">Pick one lift, say what you can lift now and what you are aiming for. You get a training plan built around that lift.</p>
+    <p class="st-note" style="margin-top:0;">Pick one lift, say what you can lift now and what you are aiming for, then choose the training method you follow. The plan is built around that method.</p>
+
+    <p class="runs-label">Muscle group</p>
+    <select class="runs-sel" id="gpGroup"></select>
 
     <p class="runs-label">Exercise</p>
     <select class="runs-sel" id="gpExercise"></select>
@@ -2298,11 +2306,12 @@
     <p class="st-note" style="margin-top:-6px;">Weights are in <span class="wu">kg</span>. Use 1 rep for a one-rep max goal.</p>
 
     <p class="runs-label">Training type</p>
-    <select class="runs-sel" id="gpType">
-      <option value="endurance">Endurance (15-25 reps)</option>
-      <option value="growth">Muscle growth (8-12 reps)</option>
-      <option value="strength" selected>Strength (3-5 reps)</option>
-    </select>
+    <div class="gp-auto" id="gpTypeShown"></div>
+
+    <p class="runs-label">Training method</p>
+    <select class="runs-sel" id="gpMethod"></select>
+    <p class="gp-hint" id="gpMethodHint"></p>
+    <div class="gp-auto gp-info" id="gpMethodInfo"></div>
 
     <p class="runs-label">Experience</p>
     <select class="runs-sel" id="gpLevel">
@@ -2312,11 +2321,15 @@
     </select>
 
     <p class="runs-label">Days per week</p>
-    <select class="runs-sel" id="gpDays">
-      <option value="2">2 days</option>
-      <option value="3" selected>3 days</option>
-      <option value="4">4 days</option>
-    </select>
+    <select class="runs-sel" id="gpDays"></select>
+
+    <div id="gpTechWrap" style="display:none;">
+      <p class="runs-label">Extra intensity</p>
+      <select class="runs-sel" id="gpTech">
+        <option value="none" selected>One working set to failure</option>
+        <option value="drop">Add a drop set after the working set</option>
+      </select>
+    </div>
 
     <p class="runs-msg err" id="gpErr"></p>
     <button type="button" class="runs-log-btn" id="gpGenerate">Generate Program</button>
@@ -5732,33 +5745,133 @@
     'Hamstrings': ['Glutes', 'Lower Back'], 'Lower Back': ['Glutes', 'Hamstrings'], 'Quads': ['Hamstrings', 'Glutes'],
     'Shoulders': ['Triceps', 'Traps'], 'Traps': ['Shoulders', 'Back'], 'Triceps': ['Chest', 'Shoulders']
   };
-  const GP_TYPES = {
-    strength: { name: 'Strength', sessions: [{ label: 'Heavy', sets: 5, reps: 3, scale: 1 }, { label: 'Medium', sets: 4, reps: 5, scale: 1 }, { label: 'Light', sets: 3, reps: 5, scale: 0.9 }], acc: { sets: 3, reps: '6-8' } },
-    growth: { name: 'Muscle growth', sessions: [{ label: 'Heavy', sets: 4, reps: 8, scale: 1 }, { label: 'Medium', sets: 3, reps: 10, scale: 1 }, { label: 'Light', sets: 3, reps: 12, scale: 1 }], acc: { sets: 3, reps: '10-12' } },
-    endurance: { name: 'Endurance', sessions: [{ label: 'Heavy', sets: 3, reps: 15, scale: 1 }, { label: 'Medium', sets: 3, reps: 20, scale: 1 }, { label: 'Light', sets: 2, reps: 25, scale: 1 }], acc: { sets: 3, reps: '15-20' } }
-  };
   const GP_LEVELS = { beginner: { name: 'Beginner', monthly: 0.05 }, intermediate: { name: 'Intermediate', monthly: 0.02 }, advanced: { name: 'Advanced', monthly: 0.008 } };
   const GP_SKIP = ['Plank', 'Side Plank', 'Hollow Body Hold', 'Wall Sit', 'Mountain Climbers', 'Burpee', 'Jump Rope', 'Flutter Kicks', 'Bird Dog', 'Superman', 'Clamshell', 'Fire Hydrant', 'Dead Bug', 'Bicycle Crunch', 'Turkish Get-Up'];
+  const GP_MAP = { 'Lower Back': 'Back', 'Full Body': 'Quads' };
+  const GP_LOWER = ['Quads', 'Hamstrings', 'Glutes', 'Lower Back', 'Calves', 'Full Body'];
+  const GP_TYPE_NAMES = { strength: 'Strength (goal of 1-5 reps)', growth: 'Muscle growth (goal of 6-12 reps)', endurance: 'Endurance (goal of 13+ reps)' };
+  const gpTypeFromReps = r => r <= 5 ? 'strength' : (r <= 12 ? 'growth' : 'endurance');
 
-  function gpFillExercises() {
-    const byCat = {};
-    EXERCISE_LIBRARY.forEach(e => { if (!GP_SKIP.includes(e.name)) (byCat[e.category] = byCat[e.category] || []).push(e.name); });
+  // Training methods. Each one decides the structure of the week, the number of sets and how the weights progress.
+  const GP_METHODS = {
+    '531': { name: '5/3/1 (Wendler)', days: [1, 2, 3, 4], def: 3, tech: false,
+      info: 'A strength method. Four-week cycles built on a training max (90% of your one-rep max): 65/75/85% for 5 reps, 70/80/90% for 3 reps, 75/85/95% for 5/3/1 reps, then a light deload week. The last set each week is done for as many reps as possible. The training max goes up every cycle.' },
+    bro: { name: 'Bro split', days: [3, 4, 5, 6], def: 5, tech: false,
+      info: 'One muscle group (or two) per day, 3-4 exercises of 4 sets each. A lot of volume for each muscle, trained about once a week.' },
+    fb: { name: 'Full body', days: [1, 2, 3], def: 3, tech: false,
+      info: 'Your whole body every session, with your goal lift first. Simple progression: small weight jumps from session to session. Works well on 1-3 days per week and for beginners.' },
+    hd: { name: 'Heavy Duty (Mentzer style)', days: [1, 2], def: 2, tech: true,
+      info: 'Very few sets, each taken to true failure after warm-ups, with long rest between sessions. One working set per exercise, 1-2 days per week. Progress comes from beating the rep target or adding weight.' },
+    hit: { name: 'High intensity (Yates style)', days: [2, 3, 4], def: 4, tech: true,
+      info: 'Ramp-up sets, then one all-out working set per exercise taken past normal limits. Every muscle once a week in a 2-4 day split. Weights and reps are logged and beaten every session.' },
+    ppl: { name: 'Push / Pull / Legs', days: [3, 6], def: 3, tech: false,
+      info: 'Push, pull and leg days. Every muscle once a week on 3 days and twice a week on 6 days, with moderate volume.' },
+    ul: { name: 'Upper / Lower', days: [2, 4], def: 4, tech: false,
+      info: 'Upper body and lower body days. Every muscle once a week on 2 days and twice a week on 4 days. A balanced choice for strength and size.' }
+  };
+  const GP_REC = { strength: '531', growth: 'ul', endurance: 'fb' };
+  const GP_REC_TEXT = {
+    strength: 'Best fit for a strength goal: 5/3/1, Heavy Duty or Full body.',
+    growth: 'Best fit for muscle growth: Upper / Lower, Push / Pull / Legs, Bro split or the high intensity methods.',
+    endurance: 'Best fit for an endurance goal: Full body or Push / Pull / Legs, with lighter weights and high reps.'
+  };
+  const gpP = ['Chest', 'Shoulders', 'Triceps'];
+  const GP_T = {
+    bro: {
+      3: [['Chest, shoulders, triceps', [['Chest', 3], ['Shoulders', 2], ['Triceps', 2]]], ['Back, biceps', [['Back', 4], ['Biceps', 2]]], ['Legs', [['Quads', 3], ['Hamstrings', 2], ['Calves', 2]]]],
+      4: [['Chest, triceps', [['Chest', 3], ['Triceps', 2]]], ['Back, biceps', [['Back', 3], ['Biceps', 2]]], ['Legs', [['Quads', 3], ['Hamstrings', 2], ['Calves', 2]]], ['Shoulders, traps, abs', [['Shoulders', 3], ['Traps', 1], ['Abs', 1]]]],
+      5: [['Chest', [['Chest', 4]]], ['Back', [['Back', 4]]], ['Shoulders, traps', [['Shoulders', 3], ['Traps', 1]]], ['Arms', [['Biceps', 3], ['Triceps', 3]]], ['Legs', [['Quads', 3], ['Hamstrings', 2], ['Calves', 2]]]],
+      6: [['Chest', [['Chest', 4]]], ['Back', [['Back', 4]]], ['Shoulders, traps', [['Shoulders', 3], ['Traps', 1]]], ['Arms', [['Biceps', 3], ['Triceps', 3]]], ['Quads, calves', [['Quads', 3], ['Calves', 2]]], ['Hamstrings, glutes, abs', [['Hamstrings', 3], ['Glutes', 2], ['Abs', 1]]]]
+    },
+    ppl: {
+      3: [['Push', [['Chest', 2], ['Shoulders', 2], ['Triceps', 2]]], ['Pull', [['Back', 3], ['Biceps', 2], ['Traps', 1]]], ['Legs', [['Quads', 2], ['Hamstrings', 2], ['Calves', 1]]]],
+      6: [['Push A', [['Chest', 2], ['Shoulders', 2], ['Triceps', 2]]], ['Pull A', [['Back', 3], ['Biceps', 2], ['Traps', 1]]], ['Legs A', [['Quads', 2], ['Hamstrings', 2], ['Calves', 1]]], ['Push B', [['Chest', 2], ['Shoulders', 2], ['Triceps', 2]]], ['Pull B', [['Back', 3], ['Biceps', 2], ['Traps', 1]]], ['Legs B', [['Quads', 2], ['Hamstrings', 2], ['Calves', 1]]]]
+    },
+    ul: {
+      2: [['Upper body', [['Chest', 2], ['Back', 2], ['Shoulders', 1], ['Biceps', 1], ['Triceps', 1]]], ['Lower body', [['Quads', 2], ['Hamstrings', 2], ['Glutes', 1], ['Calves', 1]]]],
+      4: [['Upper A', [['Chest', 2], ['Back', 2], ['Shoulders', 1], ['Biceps', 1], ['Triceps', 1]]], ['Lower A', [['Quads', 2], ['Hamstrings', 2], ['Glutes', 1], ['Calves', 1]]], ['Upper B', [['Chest', 2], ['Back', 2], ['Shoulders', 1], ['Biceps', 1], ['Triceps', 1]]], ['Lower B', [['Quads', 2], ['Hamstrings', 2], ['Glutes', 1], ['Calves', 1]]]]
+    },
+    fb: {
+      1: [['Whole body', [['Quads', 1], ['Hamstrings', 1], ['Chest', 1], ['Back', 1], ['Shoulders', 1]]]],
+      2: [['Whole body A', [['Quads', 1], ['Chest', 1], ['Back', 1], ['Shoulders', 1]]], ['Whole body B', [['Hamstrings', 1], ['Chest', 1], ['Back', 1], ['Biceps', 1], ['Triceps', 1]]]],
+      3: [['Whole body A', [['Quads', 1], ['Chest', 1], ['Back', 1], ['Shoulders', 1]]], ['Whole body B', [['Hamstrings', 1], ['Chest', 1], ['Back', 1], ['Biceps', 1]]], ['Whole body C', [['Quads', 1], ['Chest', 1], ['Back', 1], ['Triceps', 1]]]]
+    },
+    hd: {
+      1: [['Whole routine', [['Quads', 1], ['Chest', 1], ['Back', 1], ['Shoulders', 1], ['Biceps', 1], ['Triceps', 1], ['Calves', 1]]]],
+      2: [['Legs, chest, triceps', [['Quads', 2], ['Hamstrings', 1], ['Calves', 1], ['Chest', 2], ['Triceps', 2]]], ['Back, shoulders, biceps', [['Back', 2], ['Shoulders', 2], ['Traps', 1], ['Biceps', 2]]]]
+    },
+    hit: {
+      2: [['Legs, chest, triceps', [['Quads', 2], ['Hamstrings', 1], ['Calves', 1], ['Chest', 2], ['Triceps', 2]]], ['Back, shoulders, biceps', [['Back', 2], ['Shoulders', 2], ['Traps', 1], ['Biceps', 2]]]],
+      3: [['Chest, triceps', [['Chest', 3], ['Triceps', 2]]], ['Back, biceps', [['Back', 3], ['Biceps', 2]]], ['Legs, shoulders', [['Quads', 2], ['Hamstrings', 2], ['Calves', 1], ['Shoulders', 2]]]],
+      4: [['Shoulders, triceps', [['Shoulders', 3], ['Triceps', 2], ['Traps', 1]]], ['Back', [['Back', 4]]], ['Chest, biceps', [['Chest', 3], ['Biceps', 2]]], ['Legs', [['Quads', 2], ['Hamstrings', 2], ['Calves', 1]]]]
+    }
+  };
+  // Sets and reps for the set-based methods. rir = reps left in the tank on the working sets.
+  const GP_SETS = {
+    bro: { main: { strength: [4, 5], growth: [4, 8], endurance: [4, 15] }, acc: { strength: [4, '6-8'], growth: [4, '10-12'], endurance: [4, '15-20'] }, rir: 1 },
+    ppl: { main: { strength: [4, 5], growth: [3, 8], endurance: [3, 15] }, acc: { strength: [3, '6-8'], growth: [3, '10-12'], endurance: [3, '15-20'] }, rir: 2 },
+    ul: { main: { strength: [4, 5], growth: [4, 8], endurance: [3, 15] }, acc: { strength: [3, '6-8'], growth: [3, '10-12'], endurance: [3, '15-20'] }, rir: 2 },
+    fb: { main: { strength: [3, 5], growth: [3, 8], endurance: [2, 15] }, acc: { strength: [2, '6-8'], growth: [2, '10-12'], endurance: [2, '15-20'] }, rir: 2 }
+  };
+
+  // ---- Form -----------------------------------------------------------------------
+  let gpMethodTouched = false;
+  const gpEl = id => document.getElementById(id);
+  const gpCatOf = name => {
+    const lib = EXERCISE_LIBRARY.find(e => e.name.toLowerCase() === name.toLowerCase());
+    if (lib) return lib.category;
+    const mine = exercises.find(e => e.name.toLowerCase() === name.toLowerCase());
+    return mine && mine.category ? mine.category : OTHER_CATEGORY;
+  };
+  function gpFillGroups() {
+    const cats = new Set(EXERCISE_LIBRARY.map(e => e.category));
+    exercises.forEach(e => { if (e.category) cats.add(e.category); });
     const libNames = new Set(EXERCISE_LIBRARY.map(e => e.name.toLowerCase()));
-    const mine = exercises.filter(e => !libNames.has(e.name.toLowerCase())).map(e => e.name);
-    let html = '<option value="">Select exercise</option>';
-    Object.keys(byCat).sort((a, b) => a.localeCompare(b, 'en')).forEach(c => {
-      html += `<optgroup label="${escapeHtml(c)}">` + byCat[c].sort((a, b) => a.localeCompare(b, 'en')).map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('') + '</optgroup>';
-    });
-    if (mine.length) html += '<optgroup label="Your exercises">' + [...new Set(mine)].sort((a, b) => a.localeCompare(b, 'en')).map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('') + '</optgroup>';
-    document.getElementById('gpExercise').innerHTML = html;
+    if (exercises.some(e => !libNames.has(e.name.toLowerCase()) && !e.category)) cats.add(OTHER_CATEGORY);
+    gpEl('gpGroup').innerHTML = '<option value="">Select muscle group</option>' +
+      [...cats].sort((a, b) => a.localeCompare(b, 'en')).map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
   }
-  document.getElementById('gpExercise').addEventListener('change', () => {
+  function gpFillExercises() {
+    const group = gpEl('gpGroup').value;
+    const sel = gpEl('gpExercise');
+    if (!group) { sel.innerHTML = '<option value="">Select a muscle group first</option>'; return; }
+    const names = new Set(EXERCISE_LIBRARY.filter(e => e.category === group && !GP_SKIP.includes(e.name)).map(e => e.name));
+    const libNames = new Set(EXERCISE_LIBRARY.map(e => e.name.toLowerCase()));
+    exercises.forEach(e => { if (!libNames.has(e.name.toLowerCase()) && gpCatOf(e.name) === group) names.add(e.name); });
+    sel.innerHTML = '<option value="">Select exercise</option>' +
+      [...names].sort((a, b) => a.localeCompare(b, 'en')).map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+  }
+  function gpFillDays() {
+    const m = GP_METHODS[gpEl('gpMethod').value];
+    const keep = parseInt(gpEl('gpDays').value, 10);
+    gpEl('gpDays').innerHTML = m.days.map(d => `<option value="${d}">${d} ${d === 1 ? 'day' : 'days'}</option>`).join('');
+    gpEl('gpDays').value = String(m.days.includes(keep) ? keep : m.def);
+  }
+  function gpUpdateMethod() {
+    const key = gpEl('gpMethod').value, m = GP_METHODS[key];
+    gpEl('gpMethodInfo').textContent = m.info;
+    gpEl('gpTechWrap').style.display = m.tech ? 'block' : 'none';
+    gpFillDays();
+  }
+  function gpUpdateType() {
+    const r = Math.round(parseFloat(String(gpEl('gpTgtR').value).replace(',', '.')));
+    if (!(r > 0)) { gpEl('gpTypeShown').textContent = 'Set from your goal reps'; gpEl('gpMethodHint').textContent = ''; return; }
+    const t = gpTypeFromReps(r);
+    gpEl('gpTypeShown').textContent = GP_TYPE_NAMES[t];
+    gpEl('gpMethodHint').textContent = GP_REC_TEXT[t];
+    if (!gpMethodTouched) { gpEl('gpMethod').value = GP_REC[t]; gpUpdateMethod(); }
+  }
+  gpEl('gpMethod').innerHTML = Object.keys(GP_METHODS).sort((a, b) => GP_METHODS[a].name.localeCompare(GP_METHODS[b].name, 'en')).map(k => `<option value="${k}">${escapeHtml(GP_METHODS[k].name)}</option>`).join('');
+  gpEl('gpMethod').addEventListener('change', () => { gpMethodTouched = true; gpUpdateMethod(); });
+  gpEl('gpTgtR').addEventListener('input', gpUpdateType);
+  gpEl('gpGroup').addEventListener('change', gpFillExercises);
+  gpEl('gpExercise').addEventListener('change', () => {
     // Pre-fill what you can lift now from your own logged exercise, if there is one
-    const name = document.getElementById('gpExercise').value.toLowerCase();
+    const name = gpEl('gpExercise').value.toLowerCase();
     const mine = exercises.find(e => e.name.toLowerCase() === name);
     if (mine) {
-      document.getElementById('gpCurW').value = wDisp(mine.weight);
-      document.getElementById('gpCurR').value = mine.reps;
+      gpEl('gpCurW').value = wDisp(mine.weight);
+      gpEl('gpCurR').value = mine.reps;
     }
   });
   function showGoalProgram() {
@@ -5766,135 +5879,299 @@
     programDetailView.style.display = 'none';
     programEditView.style.display = 'none';
     programGoalView.style.display = 'block';
+    gpMethodTouched = false;
+    gpFillGroups();
     gpFillExercises();
-    ['gpCurW', 'gpCurR', 'gpTgtW'].forEach(id => { document.getElementById(id).value = ''; });
-    document.getElementById('gpTgtR').value = '1';
-    document.getElementById('gpErr').textContent = '';
+    ['gpCurW', 'gpCurR', 'gpTgtW'].forEach(id => { gpEl(id).value = ''; });
+    gpEl('gpTgtR').value = '1';
+    gpEl('gpTech').value = 'none';
+    gpEl('gpErr').textContent = '';
+    gpEl('gpMethod').value = GP_REC.strength;
+    gpEl('gpDays').innerHTML = '';
+    gpUpdateMethod();
+    gpUpdateType();
     applyUnitLabels();
     window.scrollTo(0, 0);
   }
   document.getElementById('goalProgramBtn').addEventListener('click', showGoalProgram);
   document.getElementById('goalProgBack').addEventListener('click', showProgramsList);
 
+  // ---- Maths ----------------------------------------------------------------------
   function gpRoundLoad(kg) {
     if (weightUnit === 'lb') return Math.max(5, Math.round(kg * LB_PER_KG / 5) * 5) / LB_PER_KG;
     return Math.max(2.5, Math.round(kg / 2.5) * 2.5);
   }
   const gpE1rm = (kg, reps) => reps <= 1 ? kg : kg * (1 + reps / 30);
-  const gpLoad = (E, reps, scale) => (E / (1 + (reps + 2) / 30)) * scale;   // stop about 2 reps short of failure
+  const gpLoad = (E, reps, scale, off) => (E / (1 + (reps + (off === undefined ? 2 : off)) / 30)) * (scale || 1);
+  const gpFail = (E, reps) => E / (1 + reps / 30);   // heaviest weight you can take to failure for this many reps
 
+  function gpWindow(type, cat) {
+    if (type === 'endurance') return [12, 20];
+    if (cat === 'Calves') return type === 'strength' ? [10, 15] : [12, 20];
+    if (['Quads', 'Hamstrings', 'Glutes', 'Full Body'].includes(cat)) return type === 'strength' ? [5, 8] : [8, 15];
+    return type === 'strength' ? [4, 6] : [6, 10];
+  }
+  function gpCurve(Ec, Et, levelKey) {
+    const gw = Math.pow(1 + GP_LEVELS[levelKey].monthly, 1 / 4.345) - 1;
+    const weeksNeeded = Math.ceil(Math.log(Et / Ec) / Math.log(1 + gw)) + 1;
+    let W = Math.max(4, weeksNeeded), capped = false, Eend = Et;
+    if (W > 24) { W = 24; capped = true; Eend = Ec * Math.pow(1 + gw, 23 - Math.floor(23 / 4)); }
+    const isDeload = n => n % 4 === 0 && n < W;
+    const K = Array.from({ length: W }, (_, i) => i + 1).filter(n => !isDeload(n)).length;
+    const rows = [];
+    let k = 0, lastE = Ec;
+    for (let n = 1; n <= W; n++) {
+      let E, deload = isDeload(n);
+      if (deload) E = lastE * 0.9;
+      else { E = K > 1 ? Ec * Math.pow(Eend / Ec, k / (K - 1)) : Ec; lastE = E; k++; }
+      rows.push({ n, E, deload, final: n === W });
+    }
+    return { W, capped, weeksNeeded, rows };
+  }
   function gpPick(cat, exclude, start, count) {
     const list = (GP_PREF[cat] || []).filter(n => n.toLowerCase() !== exclude.toLowerCase() && !exclude.toLowerCase().includes(n.toLowerCase()));
     const out = [];
     for (let i = 0; i < list.length && out.length < count; i++) out.push(list[(start + i) % list.length]);
     return out;
   }
-  function gpBuild(opts) {
-    const type = GP_TYPES[opts.type], level = GP_LEVELS[opts.level];
-    const Ec = gpE1rm(opts.curKg, opts.curReps), Et = gpE1rm(opts.tgtKg, opts.tgtReps);
-    const gw = Math.pow(1 + level.monthly, 1 / 4.345) - 1;
-    const weeksNeeded = Math.ceil(Math.log(Et / Ec) / Math.log(1 + gw)) + 1;
-    let W = Math.max(4, weeksNeeded), capped = false, Eend = Et;
-    if (W > 24) { W = 24; capped = true; Eend = Ec * Math.pow(1 + gw, 23 - Math.floor(23 / 4)); }
-    const isDeload = n => n % 4 === 0 && n < W;
-    const K = Array.from({ length: W }, (_, i) => i + 1).filter(n => !isDeload(n)).length;
-    const mainSessions = opts.days === 2 ? 2 : 3;
-    const sessions = type.sessions.slice(0, mainSessions);
-    const weeks = [];
-    let k = 0, lastE = Ec;
-    for (let n = 1; n <= W; n++) {
-      let E, note = '';
-      if (isDeload(n)) { E = lastE * 0.9; note = 'Deload week'; }
-      else {
-        E = K > 1 ? Ec * Math.pow(Eend / Ec, k / (K - 1)) : Ec;
-        lastE = E; k++;
+
+  // ---- Day layout shared by the template based methods -----------------------------
+  function gpBuildDays(o, mainLine, accLine) {
+    const m = o.method;
+    const mainG = GP_MAP[o.category] || o.category;
+    const days = GP_T[m][o.days].map(t => ({ name: t[0], groups: t[1].map(g => [g[0], g[1]]) }));
+    let mainDays;
+    if (m === 'fb') mainDays = days.map((d, i) => i);
+    else {
+      mainDays = days.map((d, i) => d.groups.some(g => g[0] === mainG) ? i : -1).filter(i => i >= 0);
+      if (!mainDays.length) {
+        const i = GP_LOWER.includes(o.category) ? days.length - 1 : 0;
+        days[i].groups.unshift([mainG, m === 'bro' ? 3 : 1]);
+        mainDays = [i];
       }
-      if (n === W) note = capped ? 'End of phase 1' : 'Goal attempt';
-      weeks.push({ n, note, loads: sessions.map(s => gpRoundLoad(gpLoad(E, s.reps, s.scale))) });
+      if (m === 'hd' || m === 'hit') mainDays = mainDays.slice(0, 1);
     }
-    // Training days: the main lift, plus accessories for the same muscle group and its helpers
-    const cat = opts.category, support = GP_SUPPORT[cat] || [];
-    const days = [];
-    const nDays = opts.days;
-    for (let d = 0; d < nDays; d++) {
-      if (d < mainSessions) {
-        const s = sessions[d];
-        const ex = [`${opts.exercise} · ${s.sets} × ${s.reps} (${s.label.toLowerCase()})`];
-        gpPick(cat, opts.exercise, d * 2, 2).forEach(n => ex.push(`${n} · ${type.acc.sets} × ${type.acc.reps}`));
-        support.slice(0, 2).forEach((sc, i) => gpPick(sc, opts.exercise, d + i, 1).forEach(n => ex.push(`${n} · ${type.acc.sets} × ${type.acc.reps}`)));
-        days.push({ name: `Day ${d + 1} · ${s.label}`, exercises: ex });
-      } else {
-        const ex = [];
-        gpPick(cat, opts.exercise, 4, 2).forEach(n => ex.push(`${n} · ${type.acc.sets} × ${type.acc.reps}`));
-        support.slice(0, 2).forEach((sc, i) => gpPick(sc, opts.exercise, 2 + i, 2).forEach(n => ex.push(`${n} · ${type.acc.sets} × ${type.acc.reps}`)));
-        days.push({ name: `Day ${d + 1} · Support`, exercises: ex });
-      }
-    }
-    const summaryGoal = `${opts.exercise} ${wDisp(opts.tgtKg)} ${weightUnit}${opts.tgtReps > 1 ? ' × ' + opts.tgtReps : ''}`;
-    return {
-      days,
-      plan: {
-        exercise: opts.exercise, type: opts.type, level: opts.level, daysPerWeek: nDays,
-        currentKg: opts.curKg, currentReps: opts.curReps, targetKg: opts.tgtKg, targetReps: opts.tgtReps,
-        sessions: sessions.map(s => ({ label: s.label, sets: s.sets, reps: s.reps })),
-        weeks, capped, weeksNeeded, tgtLabel: summaryGoal
-      }
-    };
+    const occ = {};
+    let si = 0;
+    const out = days.map((d, di) => {
+      const ex = [], used = new Set([o.exercise.toLowerCase()]);
+      const isMain = mainDays.includes(di);
+      const sess = isMain ? si++ : -1;
+      if (isMain && m === 'fb') ex.push(mainLine(sess));
+      d.groups.forEach(g => {
+        const grp = g[0];
+        if (m === 'fb' && grp === mainG) return;
+        let cnt = g[1];
+        if (isMain && m !== 'fb' && grp === mainG) { ex.push(mainLine(sess)); cnt = Math.max(0, cnt - 1); }
+        const start = (occ[grp] || 0) * 2;
+        occ[grp] = (occ[grp] || 0) + 1;
+        gpPick(grp, o.exercise, start, cnt).forEach(nm => {
+          if (!used.has(nm.toLowerCase())) { used.add(nm.toLowerCase()); ex.push(accLine(nm, grp)); }
+        });
+      });
+      return { name: `Day ${di + 1} · ${d.name}`, exercises: ex };
+    });
+    return { days: out, mainDays };
   }
+  const gpClose = 'The weights are estimates worked out from your numbers. If a set feels clearly easier or harder than described, adjust the weight and log what you actually lift.';
+
+  // ---- Builders -------------------------------------------------------------------
+  function gpBuildSets(o, type) {
+    const cfg = GP_SETS[o.method];
+    const mSets = cfg.main[type][0], mReps = cfg.main[type][1], aSets = cfg.acc[type][0], aReps = cfg.acc[type][1];
+    const offs = [0, 3, 1];
+    const repsFor = s => mReps + offs[s % 3];
+    const built = gpBuildDays(o, s => `${o.exercise} · ${mSets} × ${repsFor(s)}`, nm => `${nm} · ${aSets} × ${aReps}`);
+    const sessions = built.mainDays.map((di, s) => ({ day: di + 1, sets: mSets, reps: repsFor(s) }));
+    const curve = gpCurve(gpE1rm(o.curKg, o.curReps), gpE1rm(o.tgtKg, o.tgtReps), o.level);
+    const weeks = curve.rows.map(r => ({
+      n: r.n,
+      note: r.final ? (curve.capped ? 'End of phase 1' : `Goal attempt: @${o.tgtKg}@ × ${o.tgtReps}`) : (r.deload ? 'Deload week' : ''),
+      cells: sessions.map(s => `@${gpRoundLoad(gpLoad(r.E, s.reps, 1, cfg.rir))}@`)
+    }));
+    const f = sessions.length;
+    const how = [];
+    const freq = f === 1 ? 'about once a week' : `${f} times a week`;
+    if (o.method === 'bro') {
+      how.push(`Each muscle group gets its own day. Your muscle group (${o.category}) is trained ${freq}, with 3-4 exercises of 4 sets each.`);
+      how.push(`${o.exercise}: ${mSets} sets of ${mReps} reps at the weight in the table. It should leave about 1 rep in reserve; the last set can go to failure.`);
+      how.push(`Other exercises: ${aSets} sets of ${aReps} reps. Pick a weight where the last rep is hard.`);
+      how.push('Rest 2-3 minutes after heavy sets, 60-90 seconds after the rest. A common guideline for muscle growth is about 12-20 hard sets per muscle per week.');
+    } else if (o.method === 'ppl') {
+      how.push(`Push, pull and legs days. Your muscle group (${o.category}) is trained ${freq}.`);
+      how.push(`${o.exercise}: ${mSets} sets at the weight in the table, stopping about 2 reps before failure. ${f > 1 ? 'The second session uses more reps and a lighter weight.' : ''}`);
+      how.push(`Other exercises: ${aSets} sets of ${aReps} reps, last set close to failure. Rest 2-3 minutes on heavy lifts, 60-90 seconds otherwise.`);
+    } else if (o.method === 'ul') {
+      how.push(`Upper and lower body days. Your muscle group (${o.category}) is trained ${freq}.`);
+      how.push(`${o.exercise}: ${mSets} sets at the weight in the table, stopping about 2 reps before failure. ${f > 1 ? 'The second session uses more reps and a lighter weight.' : ''}`);
+      how.push(`Other exercises: ${aSets} sets of ${aReps} reps, last set close to failure. Rest 2-3 minutes on heavy lifts, 60-90 seconds otherwise.`);
+    } else {
+      how.push(`Whole-body sessions, ${f === 1 ? 'once a week' : f + ' times a week'}, with ${o.exercise} first every time (${mSets} sets).`);
+      how.push('Linear progression: when you complete all reps of all sets, add the smallest weight jump next session (1-2.5 kg or 2.5-5 lb). The weights in the table follow that pace.');
+      how.push('If you miss reps, repeat the same weight. If you stall twice in a row, cut the weight 5-10% and build back up (a standard reset).');
+      how.push(`Other exercises: ${aSets} sets of ${aReps} reps, not to failure. Rest 2-3 minutes between sets of the main lift.`);
+    }
+    how.push(gpClose);
+    return { days: built.days, cols: sessions.map(s => `Day ${s.day} · ${s.sets}×${s.reps}`), weeks, how, capped: curve.capped, weeksNeeded: curve.weeksNeeded };
+  }
+
+  function gpBuildFailure(o, type) {
+    const hit = o.method === 'hit';
+    const win = gpWindow(type, o.category), lo = win[0], hi = win[1], mid = Math.round((lo + hi) / 2);
+    const dropPct = hit ? 0.9 : 0.8;
+    const built = gpBuildDays(o, () => `${o.exercise} · 1 × ${lo}-${hi}, to failure`, (nm, g) => { const w = gpWindow(type, g); return `${nm} · 1 × ${w[0]}-${w[1]}, to failure`; });
+    const curve = gpCurve(gpE1rm(o.curKg, o.curReps), gpE1rm(o.tgtKg, o.tgtReps), o.level);
+    const pattern = [mid, lo, hi, mid];
+    const cols = [hit ? 'Ramp-ups' : 'Warm-ups', 'Working set'];
+    if (o.tech === 'drop') cols.push('Drop set');
+    const weeks = curve.rows.map(r => {
+      const goalWk = r.final && !curve.capped;
+      const reps = goalWk ? o.tgtReps : pattern[(r.n - 1) % 4];
+      const Wt = goalWk ? o.tgtKg : gpRoundLoad(gpFail(r.E, reps));
+      const warm = hit
+        ? `@${gpRoundLoad(Wt * 0.5)}@ × 10 · @${gpRoundLoad(Wt * 0.7)}@ × 5 · @${gpRoundLoad(Wt * 0.85)}@ × 2`
+        : `@${gpRoundLoad(Wt * 0.6)}@ × 6 · @${gpRoundLoad(Wt * 0.8)}@ × 3`;
+      const cells = [warm, `@${Wt}@ × ${reps}`];
+      if (o.tech === 'drop') cells.push(`@${gpRoundLoad(Wt * dropPct)}@`);
+      return { n: r.n, note: r.final ? (curve.capped ? 'End of phase 1' : `Goal attempt: @${o.tgtKg}@ × ${o.tgtReps}`) : (r.deload ? 'Lighter week' : ''), cells };
+    });
+    const how = [];
+    if (hit) {
+      how.push(`Warm up with 2-3 ramp-up sets (about 50%, 70% and 85% of the working weight). Then ONE working set per exercise, taken to failure and beyond. Window: ${lo}-${hi} reps.`);
+      how.push('Beyond failure means a technique at the end of the set: forced reps with a spotter, or rest-pause (rest 10-15 seconds, then a few more reps; repeat once or twice).');
+      if (o.tech === 'drop') how.push('Drop set: straight after the working set, cut the weight about 10% and go to failure again.');
+      how.push('Each muscle is trained once a week, so recovery is long. Use controlled reps with constant tension and write down every set; the aim is to beat last session\'s weight or reps.');
+    } else {
+      how.push(`Warm up with 2 progressively heavier sets (about 60% and 80% of the working weight). Then ONE working set per exercise, taken to true failure. Window: ${lo}-${hi} reps.`);
+      if (o.tech === 'drop') how.push('Drop set: straight after the working set, cut the weight about 20% and go to failure again with no rest.');
+      how.push('Slow, controlled reps (about 2 seconds up, 3-4 seconds down), no bouncing. Every other exercise is also 1 working set to failure.');
+      how.push(`Rest at least 3-4 days between sessions of the same muscle. Mentzer sometimes trained as little as once a week. If the numbers stall, rest more, not less.`);
+    }
+    how.push(`The rep target changes from week to week (${mid}, ${lo}, ${hi}, then a lighter week). The table gives the weight that should take you to failure at about that many reps.`);
+    how.push(`Progression: if you pass ${hi} reps, add 2.5 kg (5 lb) next time. If you cannot reach ${lo} reps, drop the weight about 5%.`);
+    how.push(gpClose);
+    return { days: built.days, cols, weeks, how, capped: curve.capped, weeksNeeded: curve.weeksNeeded };
+  }
+
+  function gpBuild531(o) {
+    const lower = GP_LOWER.includes(o.category);
+    const incKg = weightUnit === 'lb' ? (lower ? 10 : 5) / LB_PER_KG : (lower ? 5 : 2.5);
+    const tm0 = gpE1rm(o.curKg, o.curReps) * 0.9;
+    const tmNeed = gpE1rm(o.tgtKg, o.tgtReps) * 0.9;
+    const need = Math.max(1, Math.ceil((tmNeed - tm0) / incKg));
+    const cyclesTotal = Math.min(6, need + 1), capped = need + 1 > 6;
+    const sets = [
+      { pct: [65, 75, 85], reps: [5, 5, 5], plus: true },
+      { pct: [70, 80, 90], reps: [3, 3, 3], plus: true },
+      { pct: [75, 85, 95], reps: [5, 3, 1], plus: true },
+      { pct: [40, 50, 60], reps: [5, 5, 5], plus: false }
+    ];
+    const weeks = [];
+    for (let c = 0; c < cyclesTotal; c++) {
+      const tm = tm0 + c * incKg;
+      sets.forEach((w, wi) => {
+        const n = c * 4 + wi + 1;
+        let note = '';
+        if (wi === 0) note = `Cycle ${c + 1} · training max @${gpRoundLoad(tm)}@`;
+        if (wi === 3) note = 'Deload week';
+        if (wi === 2 && c === cyclesTotal - 1 && !capped) note = `Goal attempt after the last set: @${o.tgtKg}@ × ${o.tgtReps}`;
+        if (wi === 3 && c === cyclesTotal - 1 && capped) note = 'End of phase 1';
+        weeks.push({ n, note, cells: w.pct.map((p, i) => `${p}% · @${gpRoundLoad(tm * p / 100)}@ × ${w.reps[i]}${w.plus && i === 2 ? '+' : ''}`) });
+      });
+    }
+    // Days: day 1 is the main lift, other days train the supporting muscles
+    const sg = [];
+    (GP_SUPPORT[o.category] || []).concat(['Back', 'Chest', 'Quads', 'Hamstrings', 'Shoulders', 'Abs']).forEach(g => { if (g !== o.category && !sg.includes(g)) sg.push(g); });
+    const days = [];
+    const mainEx = [`${o.exercise} · 5/3/1 (3 working sets, last set as many reps as possible)`];
+    gpPick(o.category, o.exercise, 0, 2).forEach(nm => mainEx.push(`${nm} · 3 × 10`));
+    (GP_SUPPORT[o.category] || []).slice(0, 1).forEach(g => gpPick(g, o.exercise, 0, 1).forEach(nm => mainEx.push(`${nm} · 3 × 10`)));
+    days.push({ name: 'Day 1 · Main lift', exercises: mainEx });
+    for (let d = 1; d < o.days; d++) {
+      const ex = [];
+      [sg[((d - 1) * 2) % sg.length], sg[((d - 1) * 2 + 1) % sg.length]].forEach((g, i) => gpPick(g, o.exercise, d, 2).forEach(nm => ex.push(`${nm} · 3 × 10`)));
+      days.push({ name: `Day ${d + 1} · Support`, exercises: ex });
+    }
+    const how = [
+      `Training max: 90% of your estimated one-rep max (@${gpRoundLoad(tm0)}@ to start). All percentages in the table are taken from the training max.`,
+      'Every week has three working sets after your warm-ups. The last set of weeks 1-3 is done for as many good reps as you can (the plus sign). Stop one rep before form breaks.',
+      `After each four-week cycle the training max goes up by ${weightUnit === 'lb' ? (lower ? 10 : 5) : (lower ? 5 : 2.5)} ${weightUnit} (${lower ? 'lower body' : 'upper body'} lift). Week 4 is a light deload.`,
+      `Day 1 is your ${o.exercise}, followed by 2-3 assistance exercises for 3 sets of 10. ${o.days > 1 ? 'The other days train supporting muscles with 3 sets of 10.' : 'On a 1-day plan the support work is kept short.'}`,
+      'If you get fewer than 5 reps on the AMRAP set in week 1, the training max is too high: reset it 10% lower.',
+      gpClose
+    ];
+    return { days, cols: ['Set 1', 'Set 2', 'Set 3 (AMRAP)'], weeks, how, capped, weeksNeeded: need * 4 + 4, tooLong: need > 39 };
+  }
+
   document.getElementById('gpGenerate').addEventListener('click', () => {
-    const err = m => { document.getElementById('gpErr').textContent = m; };
-    const exercise = document.getElementById('gpExercise').value;
+    const err = m => { gpEl('gpErr').textContent = m; };
+    const exercise = gpEl('gpExercise').value;
+    if (!gpEl('gpGroup').value) return err('Pick a muscle group.');
     if (!exercise) return err('Pick an exercise.');
-    const num = id => parseFloat(String(document.getElementById(id).value).replace(',', '.'));
+    const num = id => parseFloat(String(gpEl(id).value).replace(',', '.'));
     const curW = num('gpCurW'), curR = Math.round(num('gpCurR')), tgtW = num('gpTgtW'), tgtR = Math.round(num('gpTgtR'));
     if (!(curW > 0) || !(curR > 0)) return err('Enter what you can lift now: weight and reps.');
     if (!(tgtW > 0) || !(tgtR > 0)) return err('Enter your goal: weight and reps.');
     const curKg = parseFloat(toKgStr(curW)), tgtKg = parseFloat(toKgStr(tgtW));
     if (curR > 20 || tgtR > 20) return err('Use a set of 20 reps or fewer for these numbers.');
     if (gpE1rm(tgtKg, tgtR) <= gpE1rm(curKg, curR) * 1.01) return err('Your goal needs to be higher than what you can lift now.');
-    {
-      const lvl = GP_LEVELS[document.getElementById('gpLevel').value];
-      const gw = Math.pow(1 + lvl.monthly, 1 / 4.345) - 1;
+    const method = gpEl('gpMethod').value, level = gpEl('gpLevel').value;
+    const days = parseInt(gpEl('gpDays').value, 10);
+    const type = gpTypeFromReps(tgtR);
+    if (method !== '531') {
+      const gw = Math.pow(1 + GP_LEVELS[level].monthly, 1 / 4.345) - 1;
       const wk = Math.ceil(Math.log(gpE1rm(tgtKg, tgtR) / gpE1rm(curKg, curR)) / Math.log(1 + gw)) + 1;
       if (wk > 156) return err(`At a realistic pace this goal is about ${(wk / 52).toFixed(1)} years away. Set a closer goal first and aim higher once you get there.`);
     }
-    const lib = EXERCISE_LIBRARY.find(e => e.name.toLowerCase() === exercise.toLowerCase());
-    const mine = exercises.find(e => e.name.toLowerCase() === exercise.toLowerCase());
-    const category = lib ? lib.category : (mine ? mine.category : OTHER_CATEGORY);
+    const category = gpCatOf(exercise);
+    const o = { exercise, category, curKg, curReps: curR, tgtKg, tgtReps: tgtR, level, method, days, tech: gpEl('gpTech').value };
+    const b = method === '531' ? gpBuild531(o) : (method === 'hd' || method === 'hit') ? gpBuildFailure(o, type) : gpBuildSets(o, type);
+    if (b.tooLong) return err('This goal is more than 3 years away on this method. Set a closer goal first and aim higher once you get there.');
     err('');
-    const built = gpBuild({
-      exercise, category, curKg, curReps: curR, tgtKg, tgtReps: tgtR,
-      type: document.getElementById('gpType').value, level: document.getElementById('gpLevel').value,
-      days: parseInt(document.getElementById('gpDays').value, 10)
-    });
-    const t = GP_TYPES[document.getElementById('gpType').value];
+    const tgtLabel = `${exercise} ${wDisp(tgtKg)} ${weightUnit}${tgtR > 1 ? ' × ' + tgtR : ''}`;
+    const mName = GP_METHODS[method].name;
     const prog = {
       id: 'g' + Date.now(),
-      name: `Goal: ${built.plan.tgtLabel}`,
-      description: `${t.name} · ${built.plan.daysPerWeek} days per week · ${built.plan.capped ? 'first 24 weeks' : built.plan.weeks.length + ' weeks'}`,
-      days: built.days,
-      plan: built.plan
+      name: `Goal: ${tgtLabel}`,
+      description: `${mName} · ${days} ${days === 1 ? 'day' : 'days'} per week · ${b.capped ? 'first ' + b.weeks.length + ' weeks' : b.weeks.length + ' weeks'}`,
+      days: b.days,
+      plan: {
+        method, methodName: mName, exercise, type, level, daysPerWeek: days, tech: o.tech,
+        currentKg: curKg, currentReps: curR, targetKg: tgtKg, targetReps: tgtR,
+        cols: b.cols, weeks: b.weeks, how: b.how, capped: b.capped, weeksNeeded: b.weeksNeeded, tgtLabel
+      }
     };
     customPrograms.unshift(prog);
     saveCustomProgramsToStorage();
     showProgramDetail(prog, true);
   });
 
+  const gpTok = s => String(s).replace(/@(-?[\d.]+)@/g, (m, v) => `${wDisp(parseFloat(v))} ${weightUnit}`);
   function renderProgramPlan(program) {
     const wrap = document.getElementById('programPlanWrap');
     if (!program.plan) { wrap.innerHTML = ''; return; }
-    const p = program.plan, cols = p.sessions.length;
-    const cur = `${wDisp(p.currentKg)} ${weightUnit} × ${p.currentReps}`;
-    let note = `Starting point ${cur}. Loads are worked out from your estimated one-rep max (Epley formula) and rise week by week. Every fourth week is a lighter deload week. Sets stop about 2 reps short of failure, so adjust the weight if it feels too easy or too heavy.`;
-    if (p.capped) note += ` At a realistic pace your goal is about ${p.weeksNeeded} weeks away, so this plan covers the first 24 weeks. Make a new plan when it ends.`;
-    else note += ` Expected time to goal: about ${p.weeksNeeded} weeks.`;
-    let html = `<p class="runs-label" style="margin-top:18px;">Week by week · ${escapeHtml(p.exercise)}</p><p class="plan-note">${escapeHtml(note)}</p><div class="plan-table" style="--cols:${cols}">`;
-    html += `<div class="plan-row head"><span>Week</span>${p.sessions.map(s => `<span>${s.label} ${s.sets}×${s.reps}</span>`).join('')}</div>`;
+    const p = program.plan;
+    if (!p.cols) {   // plans made by the first version of the generator
+      const cols = p.sessions.length;
+      let note = `Starting point ${wDisp(p.currentKg)} ${weightUnit} × ${p.currentReps}. Loads are worked out from your estimated one-rep max and rise week by week. Every fourth week is a lighter deload week.`;
+      let h = `<p class="runs-label" style="margin-top:18px;">Week by week · ${escapeHtml(p.exercise)}</p><p class="plan-note">${escapeHtml(note)}</p><div class="plan-table" style="--cols:${cols}">`;
+      h += `<div class="plan-row head"><span>Week</span>${p.sessions.map(s => `<span>${s.label} ${s.sets}×${s.reps}</span>`).join('')}</div>`;
+      p.weeks.forEach(w => {
+        h += `<div class="plan-row"><span class="wk">${w.n}</span>${w.loads.map(kg => `<span>${wDisp(kg)} ${weightUnit}</span>`).join('')}${w.note ? `<span class="plan-tag">${escapeHtml(w.note)}</span>` : ''}</div>`;
+      });
+      wrap.innerHTML = h + '</div>';
+      return;
+    }
+    let intro = `Starting point ${wDisp(p.currentKg)} ${weightUnit} × ${p.currentReps}. Goal ${wDisp(p.targetKg)} ${weightUnit} × ${p.targetReps}.`;
+    if (p.capped) intro += ' At a realistic pace the goal is further away than this plan covers. Make a new plan when it ends.';
+    else if (p.method !== '531') intro += ` Expected time to goal: about ${p.weeksNeeded} weeks.`;
+    let html = `<p class="runs-label" style="margin-top:18px;">How to train · ${escapeHtml(p.methodName)}</p><p class="plan-note">${escapeHtml(intro)}</p><ul class="plan-how">${p.how.map(t => `<li>${escapeHtml(gpTok(t))}</li>`).join('')}</ul>`;
+    html += `<p class="runs-label">Week by week · ${escapeHtml(p.exercise)}</p><div class="plan-table" style="--cols:${p.cols.length}">`;
+    html += `<div class="plan-row head"><span>Week</span>${p.cols.map(c => `<span>${escapeHtml(c)}</span>`).join('')}</div>`;
     p.weeks.forEach(w => {
-      html += `<div class="plan-row"><span class="wk">${w.n}</span>${w.loads.map(kg => `<span>${wDisp(kg)} ${weightUnit}</span>`).join('')}${w.note ? `<span class="plan-tag">${escapeHtml(w.note)}${w.note === 'Goal attempt' ? ': ' + wDisp(p.targetKg) + ' ' + weightUnit + ' × ' + p.targetReps : ''}</span>` : ''}</div>`;
+      html += `<div class="plan-row"><span class="wk">${w.n}</span>${w.cells.map(c => `<span>${escapeHtml(gpTok(c))}</span>`).join('')}${w.note ? `<span class="plan-tag">${escapeHtml(gpTok(w.note))}</span>` : ''}</div>`;
     });
-    html += '</div>';
-    wrap.innerHTML = html;
+    wrap.innerHTML = html + '</div>';
   }
 
   let programEditDays = [];
